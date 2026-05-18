@@ -1,0 +1,61 @@
+{
+  "agents": {
+    "agent-1778570340640-ws98tu": {
+      "agentId": "agent-1778570340640-ws98tu",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Add Razorpay payment integration to ~/Desktop/Taxly/backend/main.py. Add POST /sessions/{session_id}/pay endpoint that creates a Razorpay order (amount 49900 paise for domestic, 99900 for NRI). Add POST /razorpay/webhook endpoint that verifies signature and updates session payment_status to paid in Supabase. Gate the existing /generate-xml endpoint, return HTTP 402 if payment_status != paid. Use env vars RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET. Install razorpay Python package. Write 3 pytest tests mocking Razorpay API."
+      },
+      "createdAt": "2026-05-12T07:19:00.648Z",
+      "model": "opus",
+      "modelRoutedBy": "router"
+    },
+    "agent-1778570344637-6el75r": {
+      "agentId": "agent-1778570344637-6el75r",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Add phone OTP auth to ~/Desktop/Taxly/backend/main.py. Add POST /auth/send-otp endpoint that calls MSG91 API with phone number. Add POST /auth/verify-otp endpoint that verifies code, creates or fetches user row in Supabase users table (id UUID, phone TEXT, created_at). Return JWT token on success. Use env vars MSG91_AUTH_KEY, MSG91_TEMPLATE_ID, JWT_SECRET. Install python-jose and httpx. Write 3 pytest tests mocking MSG91."
+      },
+      "createdAt": "2026-05-12T07:19:04.643Z",
+      "model": "opus",
+      "modelRoutedBy": "router"
+    },
+    "agent-1778570347659-2zln4n": {
+      "agentId": "agent-1778570347659-2zln4n",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Add session resume to ~/Desktop/Taxly/frontend/src/pages/ChatPage.jsx. On mount, call GET /sessions/{sessionId}. If session exists and status=in_progress and messages.length > 0, restore the messages array into state and show them in chat. If status=complete, redirect to /summary/{sessionId}. Show a toast \"Welcome back! Continuing where you left off.\" when restoring. Handle 404 gracefully by starting fresh."
+      },
+      "createdAt": "2026-05-12T07:19:07.665Z",
+      "model": "sonnet",
+      "modelRoutedBy": "router"
+    },
+    "agent-1778570350493-28ldq6": {
+      "agentId": "agent-1778570350493-28ldq6",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic",
+        "task": "Add receipt email to ~/Desktop/Taxly/backend/main.py. After Razorpay webhook confirms payment, call Resend API to send email to user. Email subject: Your ITR XML is ready - Taxly. Body: plain text with user name, assessment year, amount paid, and XML attached as taxly_itr_2025-26.xml. Use env var RESEND_API_KEY. Install resend Python package. Write 2 pytest tests mocking Resend."
+      },
+      "createdAt": "2026-05-12T07:19:10.500Z",
+      "model": "sonnet",
+      "modelRoutedBy": "router"
+    }
+  },
+  "version": "3.0.0"
+}
