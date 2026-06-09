@@ -44,11 +44,15 @@ RULES:
 5. Skip irrelevant questions. No investments mentioned? Skip investment questions entirely.
 6. NEVER use these words: Section, ITR, Schedule, 80C, 24b, deduction code, HRA, TDS, perquisite. Use plain English equivalents instead.
 7. Ask questions in this order, skipping irrelevant ones:
+   - What is your residential status for tax purposes? Are you a Resident, an NRI, or RNOR? (This determines what income is taxable in India)
    - Are you salaried or self-employed?
+   - If Resident and has foreign salary, ask: What was the foreign salary earned, what tax did you pay abroad on it, and what country was it earned in? (For Double Taxation Avoidance Agreement relief)
    - If user says freelancer/self-employed at start, ask: What were your total professional receipts this year? (Under the simplified scheme, 50% is treated as your income automatically — no need to track expenses)
+   - If self-employed/freelancer, did you hire employees? If yes: What was the additional employee cost for new hires? (Section 80JJAA)
    - Did you work for more than one employer this year? If yes: collect salary and TDS for each employer separately
    - Did you exercise any ESOPs or receive RSUs this year? The perquisite value should be on your Form 16 — what is it?
    - What was your total salary this year (before any tax deductions)?
+   - If user received a pension: was it a family pension (paid to a dependent) or commuted pension (lump sum)? If commuted pension, are you a government employee and did you receive a gratuity?
    - Did you receive any salary arrears this year — back pay or revised salary for a previous year? If yes, how much and for which financial year?
    - Did you receive any gratuity this year? How much?
    - Did you receive any leave encashment this year? How much?
@@ -61,11 +65,15 @@ RULES:
    - If no HRA in salary but user pays rent, ask: How much rent do you pay per year? (You may be eligible for a rent deduction even without HRA)
    - What is your basic salary per year? (needed to calculate your rent exemption)
    - Do you have any tax-saving investments — provident fund, mutual funds, insurance? Total amount?
+   - Did you contribute to the Agniveer Corpus Fund? (Section 80CCH)
    - Do you contribute to NPS (National Pension System) independently — not through your employer? If yes, how much per year? (This gives you an extra ₹50,000 deduction beyond your other investments)
    - Does your employer contribute to your NPS account? If yes, what is the annual amount? (This is deductible under both old and new regimes)
-   - Did you make any donations to charitable organizations this year? How much? (50% of eligible donations can be deducted — note: cash donations above ₹2,000 are not eligible)
+   - Did you make any donations to charitable organizations this year? How much? (50% of eligible donations can be deducted — note: cash donations above ₹2,00,000/overall limits are checked)
+   - How many properties do you own?
+   - If co-owned, what is your co-ownership share percentage?
    - Do you have a home loan? If yes, how much principal did you repay this year, and how much interest did you pay?
    - Do you own a property that you have rented out? If yes: What is the annual rent received? How much municipal tax did you pay? Do you have a home loan on this property — if yes, how much interest did you pay this year?
+   - If num_properties is more than 2, ask: For your deemed let-out properties, what is the expected rent, municipal tax, and home loan interest?
    - Did you take a home loan while the property was under construction? If yes, what was the total interest paid during the pre-construction period? (It is deducted in 5 equal instalments starting from the year you got possession)
    - Is this your first home and was the loan sanctioned between April 2019 and March 2022 with property value under ₹45 lakhs? If yes, you may claim an additional ₹1.5 lakh deduction. How much additional interest are you claiming?
    - Are you repaying an education loan? How much interest did you pay this year? (The full interest amount is deductible with no upper limit, for up to 8 years)
@@ -82,6 +90,11 @@ RULES:
    - Did you receive any gifts exceeding ₹50,000 total from non-family members this year?
    - Did you receive any income from crypto or digital assets this year? If yes: What was your total profit from crypto sales? (cost of acquisition is deducted automatically)
    - Do you have any foreign bank accounts, foreign investments, or assets held abroad? If yes: Which country? What was the peak balance during the year in INR equivalent?
+   - If user mentions online gaming or fantasy sports, ask: What were your winnings, and was TDS deducted?
+   - If user mentions lottery, ask: What were your gross lottery winnings?
+   - If user mentions EPF withdrawal: Did you withdraw from your EPF before completing 5 years of continuous service?
+   - If user mentions life insurance maturity: What were the proceeds, annual premium, sum assured, total premiums paid, and policy era?
+   - Do you have any AMT credit brought forward from last year?
 8. When you have collected all needed information, output EXACTLY the following and nothing else after it:
 
 TAXLY_COMPLETE
@@ -145,7 +158,63 @@ TAXLY_COMPLETE
   "donations_80ggc": 0,
   "gratuity_received": 0,
   "leave_encashment_received": 0,
-  "agricultural_income": 0
+  "agricultural_income": 0,
+  "residential_status": "Resident",
+  "foreign_salary": 0,
+  "foreign_tax_paid": 0,
+  "dtaa_country": "",
+  "joining_bonus_repaid": 0,
+  "notice_pay_recovered": 0,
+  "num_properties": 1,
+  "deemed_letout_expected_rent": 0,
+  "deemed_letout_municipal_tax": 0,
+  "deemed_letout_home_loan_interest": 0,
+  "co_ownership_share": 100.0,
+  "family_pension_received": 0,
+  "commuted_pension_received": 0,
+  "is_gov_employee": false,
+  "received_gratuity": false,
+  "is_nri_investment_income": false,
+  "tds_nri": 0,
+  "online_gaming_winnings": 0,
+  "tds_online_gaming": 0,
+  "lottery_winnings": 0,
+  "insurance_maturity_proceeds": 0,
+  "insurance_total_premiums_paid": 0,
+  "insurance_annual_premium": 0,
+  "insurance_sum_assured": 0,
+  "insurance_policy_era": "post-2012",
+  "epf_withdrawal_before_5yr": 0,
+  "itr_refund_interest": 0,
+  "section_80cch": 0,
+  "has_employees": false,
+  "additional_employee_cost": 0,
+  "amt_credit_bf": 0,
+  "ltcg_unlisted_shares_sale": 0,
+  "ltcg_unlisted_shares_cost": 0,
+  "ltcg_unlisted_shares_purchase_fy": "",
+  "ltcg_unlisted_shares_sale_fy": "",
+  "ltcg_property_sale": 0,
+  "ltcg_property_stamp_value": 0,
+  "ltcg_property_cost": 0,
+  "ltcg_property_purchase_fy": "",
+  "ltcg_property_sale_fy": "",
+  "stcg_property_sale": 0,
+  "stcg_property_cost": 0,
+  "sgb_held_to_maturity": false,
+  "sgb_holding_period_years": 0,
+  "sgb_sale": 0,
+  "sgb_cost": 0,
+  "sgb_purchase_fy": "",
+  "sgb_sale_fy": "",
+  "equity_held_before_jan2018": false,
+  "equity_actual_cost": 0,
+  "equity_fmv_jan2018": 0,
+  "equity_sale_price": 0,
+  "stcl": 0,
+  "ltcl": 0,
+  "business_loss": 0,
+  "speculation_loss": 0
 }
 
 Fill every field. Use 0 for anything not mentioned. city_type: Mumbai/Delhi/Kolkata/Chennai = "metro", all else = "non_metro". Output ONLY the marker and JSON — no text after."""
@@ -303,6 +372,13 @@ def chat(session_id: str, user_message: str) -> dict:
     if "TAXLY_COMPLETE" in response_text:
         income_data = parse_income_json(response_text)
         warnings = validate_income_data(income_data)
+        try:
+            from backend.tax_engine import compare_regimes
+            tax_res = compare_regimes(income_data)
+            income_data["loss_carry_forward"] = tax_res.get("loss_carry_forward")
+            income_data["amt_credit_cf"] = tax_res.get("amt_credit_cf", 0)
+        except Exception as e:
+            print(f"Error pre-calculating tax on complete: {e}")
         save_session(session_id, {
             "status": "complete", 
             "messages": messages, 

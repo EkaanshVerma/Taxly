@@ -8,28 +8,27 @@ client = TestClient(app)
 @patch("httpx.post")
 def test_send_otp_success(mock_post):
     mock_post.return_value.status_code = 200
-    response = client.post("/auth/send-otp", json={"phone": "9876543210"})
+    response = client.post("/auth/send-otp", json={"email": "test@taxly.in"})
     assert response.status_code == 200
     assert response.json()["message"] == "OTP sent"
 
-@patch("httpx.get")
-@patch("backend.main._init_supabase") # Mock to avoid DB in test
-def test_verify_otp_success(mock_init_supabase, mock_get):
-    import os
-    os.environ["MSG91_AUTH_KEY"] = "test_key"
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.json.return_value = {"type": "success"}
-    
-    response = client.post("/auth/verify-otp", json={"phone": "9876543210", "otp": "123456"})
+def test_verify_otp_success():
+    from backend.main import otp_store
+    import time
+    otp_store["test@taxly.in"] = {
+        "otp": "123456",
+        "expires_at": time.time() + 600
+    }
+    response = client.post("/auth/verify-otp", json={"email": "test@taxly.in", "otp": "123456"})
     assert response.status_code == 200
     assert "token" in response.json()
 
-@patch("httpx.get")
-def test_verify_otp_failure(mock_get):
-    import os
-    os.environ["MSG91_AUTH_KEY"] = "test_key"
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.json.return_value = {"type": "error"}
-    
-    response = client.post("/auth/verify-otp", json={"phone": "9876543210", "otp": "000000"})
+def test_verify_otp_failure():
+    from backend.main import otp_store
+    import time
+    otp_store["test@taxly.in"] = {
+        "otp": "123456",
+        "expires_at": time.time() + 600
+    }
+    response = client.post("/auth/verify-otp", json={"email": "test@taxly.in", "otp": "000000"})
     assert response.status_code == 401

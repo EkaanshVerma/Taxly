@@ -660,3 +660,143 @@ def test_amt_not_applicable_normal_income():
     res = calculate_old_regime(income_data)
     assert res["amt_applicable"] == False
     assert res["amt"] == 0
+
+def test_ltcg_property_with_indexation():
+    cg_data = {
+        "ltcg_property_sale": 9000000,
+        "ltcg_property_cost": 5000000,
+        "ltcg_property_purchase_fy": "FY2018-19",
+        "ltcg_property_sale_fy": "FY2024-25",
+        "applicable_slab_rate": 0.30
+    }
+    res = calculate_capital_gains(cg_data)
+    # CII FY2018-19 = 280, CII FY2024-25 = 363.
+    # Indexed cost = 5000000 * 363 / 280 = 6482143
+    # Gain = 9000000 - 6482143 = 2517857
+    # Tax = 2517857 * 0.20 = 503571.4 -> 503571
+    assert res["total_cg_tax"] == 503571
+
+def test_sgb_maturity_exempt():
+    cg_data = {
+        "sgb_held_to_maturity": True,
+        "sgb_sale": 500000,
+        "sgb_cost": 300000,
+        "applicable_slab_rate": 0.30
+    }
+    res = calculate_capital_gains(cg_data)
+    assert res["total_cg_tax"] == 0
+
+def test_capital_loss_setoff_stcl_against_ltcg():
+    cg_data = {
+        "ltcg_equity": 200000,
+        "stcl": 50000,
+        "applicable_slab_rate": 0.30
+    }
+    res = calculate_capital_gains(cg_data)
+    # Net ltcg_equity = 200k - 50k = 150k.
+    # Exempt = 100k, taxable = 50k @ 10% = 5000.
+    assert res["total_cg_tax"] == 5000
+    assert res["carry_forward_stcl"] == 0
+
+def test_deemed_letout_third_property():
+    income_data = {
+        "gross_salary": 500000,
+        "is_salaried": True,
+        "num_properties": 3,
+        "deemed_letout_expected_rent": 120000,
+        "deemed_letout_municipal_tax": 20000,
+        "deemed_letout_home_loan_interest": 40000
+    }
+    res = calculate_old_regime(income_data)
+    # deemed NAV = 120k - 20k = 100k
+    # std deduct = 30k
+    # interest = 40k
+    # deemed letout income = 100k - 30k - 40k = 30k.
+    # Gross salary = 500k - 50k (std) = 450k.
+    # HP total = 30k. Total taxable = 480k.
+    assert res["taxable_income"] == 480000
+
+def test_online_gaming_30_percent():
+    income_data = {
+        "gross_salary": 500000,
+        "is_salaried": True,
+        "online_gaming_winnings": 100000
+    }
+    res = calculate_old_regime(income_data)
+    # Slab taxable = 450k. Slab tax = 10000.
+    # Gaming tax = 30000.
+    # Total before cess = 40000.
+    assert res["tax_before_cess"] == 40000
+
+def test_family_pension_deduction():
+    income_data = {
+        "gross_salary": 500000,
+        "is_salaried": False,
+        "family_pension_received": 60000
+    }
+    res = calculate_old_regime(income_data)
+    # Pension deduction = min(20k, 15k) = 15k. Taxable = 45k.
+    # Salary = 500k. Total taxable = 545k.
+    assert res["taxable_income"] == 545000
+
+def test_nri_investment_income_20_percent():
+    income_data = {
+        "gross_salary": 500000,
+        "is_salaried": False,
+        "is_nri": True,
+        "is_nri_investment_income": True,
+        "fd_interest": 200000
+    }
+    res = calculate_old_regime(income_data)
+    # fd_interest excluded from slab.
+    # Slab taxable = 500k. slab tax = 12500.
+    # Flat 20% on 200k interest = 40000.
+    # Total tax before cess = 52500.
+    assert res["tax_before_cess"] == 52500
+
+def test_rnor_foreign_income_exempt():
+    income_data = {
+        "gross_salary": 500000,
+        "is_salaried": True,
+        "residential_status": "RNOR",
+        "foreign_salary": 1000000
+    }
+    res = calculate_old_regime(income_data)
+    # Foreign salary exempt. Taxable salary = 450k.
+    assert res["taxable_income"] == 450000
+
+def test_epf_withdrawal_before_5yr():
+    income_data = {
+        "gross_salary": 500000,
+        "is_salaried": True,
+        "epf_withdrawal_before_5yr": 300000
+    }
+    res = calculate_old_regime(income_data)
+    # Gross salary = 500k + 300k = 800k. Taxable = 750k.
+    assert res["taxable_income"] == 750000
+
+def test_amt_credit_carryforward():
+    income_data = {
+        "gross_salary": 2500000,
+        "is_salaried": True,
+        "amt_credit_bf": 20000
+    }
+    res = calculate_old_regime(income_data)
+    assert res["amt_credit_applied"] == 20000
+    assert res["amt_credit_cf"] == 0
+
+def test_equity_grandfathering_jan2018():
+    cg_data = {
+        "equity_held_before_jan2018": True,
+        "equity_actual_cost": 100000,
+        "equity_fmv_jan2018": 150000,
+        "equity_sale_price": 200000,
+        "applicable_slab_rate": 0.30
+    }
+    res = calculate_capital_gains(cg_data)
+    # COA = max(100k, min(150k, 200k)) = 150k
+    # Net ltcg = 50k.
+    # Exempt = 50k, tax = 0
+    assert res["exempt_ltcg_amount"] == 50000
+    assert res["total_cg_tax"] == 0
+

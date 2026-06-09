@@ -145,6 +145,16 @@ def calculate_interest_234(income_data: dict, tax_result: dict) -> dict:
         tds = income_data.get("tds_deducted", 0)
         
     tds += income_data.get("tds_on_vda", 0)
+    tds += income_data.get("tds_online_gaming", 0)
+    tds += income_data.get("tds_nri", 0)
+    
+    epf_withdrawal = income_data.get("epf_withdrawal_before_5yr", 0)
+    if epf_withdrawal > 0:
+        has_pan = bool(income_data.get("pan"))
+        rate = 0.10 if has_pan else 0.20
+        epf_tds = round(epf_withdrawal * rate)
+        tds += epf_tds
+        
     advance_tax_paid = income_data.get("advance_tax_paid", 0)
     total_paid = tds + advance_tax_paid
     
@@ -194,6 +204,147 @@ def calculate_house_property_income(hp_data: dict) -> dict:
         "home_loan_interest_letout": home_loan_interest_letout
     }
 
+def apply_capital_loss_setoff(stcg: int, ltcg_equity: int, ltcg_other: int, stcl: int, ltcl: int) -> dict:
+    stcl = abs(stcl)
+    ltcl = abs(ltcl)
+    
+    # 1. LTCL can only be set off against LTCG
+    # First against ltcg_other (20% or slab)
+    setoff_ltcl_other = min(ltcg_other, ltcl)
+    ltcg_other -= setoff_ltcl_other
+    ltcl -= setoff_ltcl_other
+    
+    # Then against ltcg_equity (10%)
+    setoff_ltcl_equity = min(ltcg_equity, ltcl)
+    ltcg_equity -= setoff_ltcl_equity
+    ltcl -= setoff_ltcl_equity
+    
+    # 2. STCL can be set off against both STCG and LTCG
+    # First against ltcg_other
+    setoff_stcl_other = min(ltcg_other, stcl)
+    ltcg_other -= setoff_stcl_other
+    stcl -= setoff_stcl_other
+    
+    # Then against stcg
+    setoff_stcl_stcg = min(stcg, stcl)
+    stcg -= setoff_stcl_stcg
+    stcl -= setoff_stcl_stcg
+    
+    # Then against ltcg_equity
+    setoff_stcl_equity = min(ltcg_equity, stcl)
+    ltcg_equity -= setoff_stcl_equity
+    stcl -= setoff_stcl_equity
+    
+    return {
+        "stcg": stcg,
+        "ltcg_equity": ltcg_equity,
+        "ltcg_other": ltcg_other,
+        "carry_forward_stcl": stcl,
+        "carry_forward_ltcl": ltcl
+    }
+
+def _get_adjusted_gross_salary(income_data: dict) -> int:
+    employers = income_data.get("employers", [])
+    if employers:
+        gross_salary = sum(e.get("gross_salary", 0) for e in employers)
+    else:
+        gross_salary = income_data.get("gross_salary", 0)
+        
+    gross_salary += income_data.get("esop_perquisite_value", 0)
+    
+    # Commuted pension
+    commuted_received = income_data.get("commuted_pension_received", 0)
+    if commuted_received > 0:
+        is_gov = income_data.get("is_gov_employee", False)
+        has_gratuity = income_data.get("received_gratuity", False) or income_data.get("gratuity_received", 0) > 0
+        if is_gov:
+            commuted_exempt = commuted_received
+        elif has_gratuity:
+            commuted_exempt = round(commuted_received / 3)
+        else:
+            commuted_exempt = round(commuted_received / 2)
+        commuted_taxable = max(0, commuted_received - commuted_exempt)
+        gross_salary += commuted_taxable
+        
+    # EPF premature withdrawal
+    epf_withdrawal = income_data.get("epf_withdrawal_before_5yr", 0)
+    if epf_withdrawal > 0:
+        gross_salary += epf_withdrawal
+        
+    # Notice pay recovery
+    notice_pay_recovered = income_data.get("notice_pay_recovered", 0)
+    gross_salary += notice_pay_recovered
+    
+    # Joining bonus clawback
+    joining_bonus_repaid = income_data.get("joining_bonus_repaid", 0)
+    gross_salary = max(0, gross_salary - joining_bonus_repaid)
+    
+    # Foreign salary DTAA inclusion
+    res_status = income_data.get("residential_status", "Resident")
+    if res_status == "Resident":
+        foreign_salary = income_data.get("foreign_salary", 0)
+        gross_salary += foreign_salary
+        
+    return gross_salary
+
+def calculate_dtaa_relief(income_data: dict, taxable_income: int, total_tax_before_relief: int) -> int:
+    res_status = income_data.get("residential_status", "Resident")
+    if res_status != "Resident":
+        return 0
+        
+    foreign_salary = income_data.get("foreign_salary", 0)
+    if foreign_salary <= 0 or taxable_income <= 0:
+        return 0
+        
+    dtaa_country = income_data.get("dtaa_country", "").strip().upper()
+    supported_countries = ["US", "USA", "UK", "CANADA", "SINGAPORE", "AUSTRALIA"]
+    if dtaa_country not in supported_countries:
+        return 0
+        
+    foreign_tax_paid = income_data.get("foreign_tax_paid", 0)
+    indian_tax_on_foreign_income = round((total_tax_before_relief / taxable_income) * foreign_salary)
+    
+    return min(foreign_tax_paid, indian_tax_on_foreign_income)
+
+def _calculate_hp_income_and_loss(income_data: dict) -> dict:
+    share = income_data.get("co_ownership_share", 100.0)
+    if share <= 0 or share > 100.0:
+        share = 100.0
+    factor = share / 100.0
+    
+    hp_income_aggregate = 0
+    
+    if income_data.get("has_let_out_property"):
+        hp_data = income_data.get("hp_data", {})
+        hp_result = calculate_house_property_income(hp_data)
+        hp_income_aggregate += round(hp_result["hp_income"] * factor)
+        
+    if income_data.get("num_properties", 1) > 2:
+        expected_rent = income_data.get("deemed_letout_expected_rent", 0)
+        deemed_municipal_tax = income_data.get("deemed_letout_municipal_tax", 0)
+        deemed_interest = income_data.get("deemed_letout_home_loan_interest", 0)
+        
+        deemed_nav = max(0, expected_rent - deemed_municipal_tax)
+        deemed_std_deduct = round(deemed_nav * 0.30) if deemed_nav > 0 else 0
+        deemed_hp_income = deemed_nav - deemed_std_deduct - deemed_interest
+        hp_income_aggregate += round(deemed_hp_income * factor)
+        
+    hp_income_total = 0
+    hp_loss_setoff = 0
+    unabsorbed_hp_loss = 0
+    
+    if hp_income_aggregate > 0:
+        hp_income_total = hp_income_aggregate
+    else:
+        hp_loss_setoff = min(abs(hp_income_aggregate), 200000)
+        unabsorbed_hp_loss = abs(hp_income_aggregate) - hp_loss_setoff
+        
+    return {
+        "hp_income_total": hp_income_total,
+        "hp_loss_setoff": hp_loss_setoff,
+        "unabsorbed_hp_loss": unabsorbed_hp_loss
+    }
+
 def calculate_89_relief(income_data: dict) -> dict:
     arrears_received = income_data.get("arrears_received", 0)
     if arrears_received <= 0:
@@ -215,15 +366,57 @@ def calculate_other_income(income_data: dict) -> dict:
     fd_interest = income_data.get("fd_interest", 0)
     dividend_income = income_data.get("dividend_income", 0)
     gift_received = income_data.get("gift_received", 0)
-    
     taxable_gift = gift_received if gift_received > 50000 else 0
-    other_income_total = fd_interest + dividend_income + taxable_gift
+    
+    # Family pension
+    family_pension = income_data.get("family_pension_received", 0)
+    family_pension_deduction = min(round(family_pension / 3), 15000)
+    taxable_family_pension = max(0, family_pension - family_pension_deduction)
+    
+    # Insurance maturity proceeds
+    insurance_maturity_proceeds = income_data.get("insurance_maturity_proceeds", 0)
+    insurance_total_premiums = income_data.get("insurance_total_premiums_paid", 0)
+    annual_premium = income_data.get("insurance_annual_premium", 0)
+    sum_assured = income_data.get("insurance_sum_assured", 0)
+    policy_era = income_data.get("insurance_policy_era", "post-2012")
+    
+    is_taxable = False
+    if insurance_maturity_proceeds > 0:
+        if policy_era == "pre-2012":
+            if annual_premium > 0.20 * sum_assured if sum_assured > 0 else False:
+                is_taxable = True
+        elif policy_era == "post-2012":
+            if annual_premium > 0.10 * sum_assured if sum_assured > 0 else False:
+                is_taxable = True
+        elif policy_era == "post-2023":
+            if (annual_premium > 0.15 * sum_assured if sum_assured > 0 else False) or annual_premium > 500000:
+                is_taxable = True
+                
+    taxable_insurance = max(0, insurance_maturity_proceeds - insurance_total_premiums) if is_taxable else 0
+    
+    # ITR refund interest
+    itr_refund_interest = income_data.get("itr_refund_interest", 0)
+    
+    other_income_total = (
+        fd_interest + 
+        dividend_income + 
+        taxable_gift + 
+        taxable_family_pension + 
+        taxable_insurance + 
+        itr_refund_interest
+    )
+    
     return {
         "fd_interest": fd_interest,
         "dividend_income": dividend_income,
         "taxable_gift": taxable_gift,
+        "taxable_family_pension": taxable_family_pension,
+        "family_pension_deduction": family_pension_deduction,
+        "taxable_insurance": taxable_insurance,
+        "itr_refund_interest": itr_refund_interest,
         "other_income_total": other_income_total
     }
+
 
 def calculate_old_regime(income_data: dict) -> dict:
     is_freelancer = income_data.get("is_freelancer", False)
@@ -236,13 +429,7 @@ def calculate_old_regime(income_data: dict) -> dict:
         hra_exemption = 0
         total_10_14 = 0
     else:
-        employers = income_data.get("employers", [])
-        if employers:
-            gross_salary = sum(e.get("gross_salary", 0) for e in employers)
-        else:
-            gross_salary = income_data.get("gross_salary", 0)
-            
-        gross_salary += income_data.get("esop_perquisite_value", 0)
+        gross_salary = _get_adjusted_gross_salary(income_data)
         
         uniform_exempt = min(income_data.get("uniform_allowance_claimed", 0), 24000)
         children_edu_exempt = min(income_data.get("children_education_allowance", 0), 2) * 2400
@@ -267,9 +454,15 @@ def calculate_old_regime(income_data: dict) -> dict:
     )
     sec_80c = min(sum_80c, 150000)
     
-    pre_construction_interest = income_data.get("pre_construction_interest", 0)
+    # Co-ownership factor
+    share = income_data.get("co_ownership_share", 100.0)
+    if share <= 0 or share > 100.0:
+        share = 100.0
+    factor = share / 100.0
+    
+    pre_construction_interest = income_data.get("pre_construction_interest", 0) * factor
     instalment = round(pre_construction_interest / 5)
-    total_24b_eligible = income_data.get("home_loan_interest", 0) + instalment
+    total_24b_eligible = (income_data.get("home_loan_interest", 0) * factor) + instalment
     home_loan_int = min(total_24b_eligible, 200000)
     
     home_loan_80eea = income_data.get("home_loan_80eea", 0)
@@ -309,7 +502,20 @@ def calculate_old_regime(income_data: dict) -> dict:
     sec_80gga = income_data.get("donations_80gga", 0)
     sec_80ggc = income_data.get("donations_80ggc", 0)
     
-    deductions_before_80gg = std_deduction + sec_80c + hra_exemption + home_loan_int + sec_80d + nps_80ccd + sec_80tta + sec_80ttb + sec_80g + sec_80ccd1 + sec_80e + sec_80eea + sec_80ee + sec_80u + sec_80dd + sec_80ddb + sec_80gga + sec_80ggc
+    # 80CCH Agniveer deduction
+    sec_80cch = income_data.get("section_80cch", 0)
+    
+    # 80JJAA deduction
+    sec_80jjaa = 0
+    if income_data.get("is_freelancer", False) and income_data.get("has_employees", False):
+        sec_80jjaa = round(income_data.get("additional_employee_cost", 0) * 0.30)
+    
+    deductions_before_80gg = (
+        std_deduction + sec_80c + hra_exemption + home_loan_int + sec_80d + 
+        nps_80ccd + sec_80tta + sec_80ttb + sec_80g + sec_80ccd1 + sec_80e + 
+        sec_80eea + sec_80ee + sec_80u + sec_80dd + sec_80ddb + sec_80gga + 
+        sec_80ggc + sec_80cch + sec_80jjaa
+    )
     
     sec_80gg = 0
     hra_received = income_data.get("hra_received", 0)
@@ -323,15 +529,10 @@ def calculate_old_regime(income_data: dict) -> dict:
               
     total_deductions = deductions_before_80gg + sec_80gg
     
-    hp_income_total = 0
-    hp_loss_setoff = 0
-    if income_data.get("has_let_out_property"):
-        hp_data = income_data.get("hp_data", {})
-        hp_result = calculate_house_property_income(hp_data)
-        if hp_result["hp_income"] > 0:
-            hp_income_total = hp_result["hp_income"]
-        else:
-            hp_loss_setoff = hp_result["loss_setoff"]
+    # House Property income/loss aggregate
+    hp_res = _calculate_hp_income_and_loss(income_data)
+    hp_income_total = hp_res["hp_income_total"]
+    hp_loss_setoff = hp_res["hp_loss_setoff"]
             
     other_income = calculate_other_income(income_data)
     effective_gross = gross_salary + hp_income_total + other_income["other_income_total"]
@@ -345,7 +546,26 @@ def calculate_old_regime(income_data: dict) -> dict:
     else:
         slabs = OLD_REGIME_SLABS
         
-    tax_before_cess = _apply_slabs(taxable_income, slabs)
+    # NRI investment income adjustment
+    taxable_slab_income = taxable_income
+    tax_on_nri_invest = 0
+    
+    is_nri = income_data.get("is_nri", False) or income_data.get("residential_status") == "NRI"
+    is_nri_invest = income_data.get("is_nri_investment_income", False)
+    
+    if is_nri and is_nri_invest:
+        nri_invest_income = other_income["fd_interest"] + other_income["dividend_income"] + income_data.get("savings_interest", 0)
+        taxable_nri_invest = min(taxable_income, nri_invest_income)
+        taxable_slab_income = max(0, taxable_income - taxable_nri_invest)
+        tax_on_nri_invest = round(taxable_nri_invest * 0.20)
+        
+    tax_before_cess = _apply_slabs(taxable_slab_income, slabs) + tax_on_nri_invest
+    
+    # Online gaming and lottery winnings flat 30% tax
+    gaming_tax = round(income_data.get("online_gaming_winnings", 0) * 0.30)
+    lottery_tax = round(income_data.get("lottery_winnings", 0) * 0.30)
+    special_flat_tax = gaming_tax + lottery_tax
+    tax_before_cess += special_flat_tax
     
     agricultural_income = income_data.get("agricultural_income", 0)
     if agricultural_income > 5000 and taxable_income > slabs[0][0]:
@@ -362,7 +582,11 @@ def calculate_old_regime(income_data: dict) -> dict:
     cess = round(tax_after_rebate * 0.04)
     regular_tax = tax_after_rebate + cess
     
-    chapter_6a_for_amt = sec_80g + sec_80gga + sec_80ggc + sec_80ee + sec_80eea + sec_80gg + sec_80ddb + sec_80u + sec_80dd + sec_80tta + sec_80ttb + sec_80e + nps_80ccd + sec_80ccd1
+    chapter_6a_for_amt = (
+        sec_80g + sec_80gga + sec_80ggc + sec_80ee + sec_80eea + sec_80gg + 
+        sec_80ddb + sec_80u + sec_80dd + sec_80tta + sec_80ttb + sec_80e + 
+        nps_80ccd + sec_80ccd1 + sec_80cch + sec_80jjaa
+    )
     adjusted_total_income = taxable_income + chapter_6a_for_amt
     amt_applicable = adjusted_total_income > 2000000
     
@@ -374,8 +598,27 @@ def calculate_old_regime(income_data: dict) -> dict:
     else:
         amt = 0
         
-    final_tax = max(regular_tax, amt)
+    # AMT Credit utilization & carry forward
+    amt_val = amt if amt_applicable else 0
+    amt_credit_bf = income_data.get("amt_credit_bf", 0)
+    amt_credit_applied = 0
+    amt_credit_cf = amt_credit_bf
+    
+    if regular_tax > amt_val:
+        max_credit_allowed = regular_tax - amt_val
+        amt_credit_applied = min(amt_credit_bf, max_credit_allowed)
+        final_tax = regular_tax - amt_credit_applied
+        amt_credit_cf = amt_credit_bf - amt_credit_applied
+    else:
+        new_credit = amt_val - regular_tax
+        final_tax = amt_val
+        amt_credit_cf = amt_credit_bf + new_credit
+        
     total_tax = final_tax
+    
+    # Calculate DTAA relief
+    dtaa_relief = calculate_dtaa_relief(income_data, taxable_income, total_tax)
+    total_tax = max(0, total_tax - dtaa_relief)
     
     effective_rate = round((total_tax / gross_salary * 100), 2) if gross_salary > 0 else 0.0
     
@@ -408,10 +651,16 @@ def calculate_old_regime(income_data: dict) -> dict:
             "section_80dd": sec_80dd,
             "section_80ddb": sec_80ddb,
             "section_80gga": sec_80gga,
-            "section_80ggc": sec_80ggc
+            "section_80ggc": sec_80ggc,
+            "section_80cch": sec_80cch,
+            "section_80jjaa": sec_80jjaa
         },
         "amt_applicable": amt_applicable,
-        "amt": amt
+        "amt": amt,
+        "amt_credit_cf": amt_credit_cf,
+        "amt_credit_applied": amt_credit_applied,
+        "unabsorbed_hp_loss": hp_res["unabsorbed_hp_loss"],
+        "dtaa_relief": dtaa_relief
     }
 
 def calculate_new_regime(income_data: dict) -> dict:
@@ -423,13 +672,7 @@ def calculate_new_regime(income_data: dict) -> dict:
         gross_salary = presumptive_data["presumptive_income"]
         std_deduction = 0
     else:
-        employers = income_data.get("employers", [])
-        if employers:
-            gross_salary = sum(e.get("gross_salary", 0) for e in employers)
-        else:
-            gross_salary = income_data.get("gross_salary", 0)
-            
-        gross_salary += income_data.get("esop_perquisite_value", 0)
+        gross_salary = _get_adjusted_gross_salary(income_data)
         gratuity_exempt = min(income_data.get("gratuity_received", 0), 2000000)
         leave_encashment_exempt = min(income_data.get("leave_encashment_received", 0), 2500000)
         gross_salary = max(0, gross_salary - gratuity_exempt - leave_encashment_exempt)
@@ -441,22 +684,46 @@ def calculate_new_regime(income_data: dict) -> dict:
     sec_80ccd1 = min(employer_nps, round(income_data.get("basic_salary", 0) * 0.10))
     total_deductions += sec_80ccd1
     
-    hp_income_total = 0
-    hp_loss_setoff = 0
-    if income_data.get("has_let_out_property"):
-        hp_data = income_data.get("hp_data", {})
-        hp_result = calculate_house_property_income(hp_data)
-        if hp_result["hp_income"] > 0:
-            hp_income_total = hp_result["hp_income"]
-        else:
-            hp_loss_setoff = hp_result["loss_setoff"]
+    # 80CCH Agniveer deduction
+    sec_80cch = income_data.get("section_80cch", 0)
+    total_deductions += sec_80cch
+    
+    # 80JJAA deduction
+    sec_80jjaa = 0
+    if income_data.get("is_freelancer", False) and income_data.get("has_employees", False):
+        sec_80jjaa = round(income_data.get("additional_employee_cost", 0) * 0.30)
+    total_deductions += sec_80jjaa
+    
+    # House Property income/loss aggregate
+    hp_res = _calculate_hp_income_and_loss(income_data)
+    hp_income_total = hp_res["hp_income_total"]
+    hp_loss_setoff = hp_res["hp_loss_setoff"]
             
     other_income = calculate_other_income(income_data)
     effective_gross = gross_salary + hp_income_total + other_income["other_income_total"]
     
     taxable_income = max(0, effective_gross - total_deductions - hp_loss_setoff)
     
-    tax_before_cess = _apply_slabs(taxable_income, NEW_REGIME_SLABS)
+    # NRI investment income adjustment
+    taxable_slab_income = taxable_income
+    tax_on_nri_invest = 0
+    
+    is_nri = income_data.get("is_nri", False) or income_data.get("residential_status") == "NRI"
+    is_nri_invest = income_data.get("is_nri_investment_income", False)
+    
+    if is_nri and is_nri_invest:
+        nri_invest_income = other_income["fd_interest"] + other_income["dividend_income"] + income_data.get("savings_interest", 0)
+        taxable_nri_invest = min(taxable_income, nri_invest_income)
+        taxable_slab_income = max(0, taxable_income - taxable_nri_invest)
+        tax_on_nri_invest = round(taxable_nri_invest * 0.20)
+        
+    tax_before_cess = _apply_slabs(taxable_slab_income, NEW_REGIME_SLABS) + tax_on_nri_invest
+    
+    # Online gaming and lottery winnings flat 30% tax
+    gaming_tax = round(income_data.get("online_gaming_winnings", 0) * 0.30)
+    lottery_tax = round(income_data.get("lottery_winnings", 0) * 0.30)
+    special_flat_tax = gaming_tax + lottery_tax
+    tax_before_cess += special_flat_tax
     
     rebate_87a = min(tax_before_cess, 25000) if taxable_income <= 700000 else 0
     tax_after_rebate = max(0, tax_before_cess - rebate_87a)
@@ -466,6 +733,10 @@ def calculate_new_regime(income_data: dict) -> dict:
         
     cess = round(tax_after_rebate * 0.04)
     total_tax = tax_after_rebate + cess
+    
+    # Calculate DTAA relief
+    dtaa_relief = calculate_dtaa_relief(income_data, taxable_income, total_tax)
+    total_tax = max(0, total_tax - dtaa_relief)
     
     effective_rate = round((total_tax / gross_salary * 100), 2) if gross_salary > 0 else 0.0
     
@@ -484,8 +755,12 @@ def calculate_new_regime(income_data: dict) -> dict:
             "hra_exemption": 0,
             "home_loan_interest_24b": 0,
             "section_80d": 0,
-            "section_80ccd1": sec_80ccd1
-        }
+            "section_80ccd1": sec_80ccd1,
+            "section_80cch": sec_80cch,
+            "section_80jjaa": sec_80jjaa
+        },
+        "unabsorbed_hp_loss": hp_res["unabsorbed_hp_loss"],
+        "dtaa_relief": dtaa_relief
     }
 
 def calculate_capital_gains(cg_data: dict) -> dict:
@@ -494,39 +769,145 @@ def calculate_capital_gains(cg_data: dict) -> dict:
     ltcg_debt_pre = cg_data.get("ltcg_debt_pre_april23", 0)
     ltcg_debt_post = cg_data.get("ltcg_debt_post_april23", 0)
     cost_acq = cg_data.get("cost_of_debt_acquisition", 0)
-    
     slab_rate = cg_data.get("applicable_slab_rate", 0.0)
     
-    exempt_ltcg_amount = min(ltcg_equity, 100000)
-    taxable_ltcg_equity = max(0, ltcg_equity - 100000)
-    ltcg_equity_tax = round(taxable_ltcg_equity * 0.10)
-    
-    stcg_equity_tax = round(stcg_equity * 0.15)
-    
-    ltcg_debt_tax_pre = 0
+    # Pre-April 2023 debt gains calculation
+    ltcg_debt_gain_pre = 0
     if ltcg_debt_pre > 0 and cost_acq > 0:
         purch_fy = cg_data.get("debt_purchase_fy")
         sale_fy = cg_data.get("debt_sale_fy")
         if purch_fy in CII and sale_fy in CII:
             indexed_cost = round(cost_acq * (CII[sale_fy] / CII[purch_fy]))
-            indexed_gain = max(0, ltcg_debt_pre - indexed_cost)
-            if indexed_gain > 0:
-                ltcg_debt_tax_pre = round(indexed_gain * slab_rate)
+            ltcg_debt_gain_pre = max(0, ltcg_debt_pre - indexed_cost)
+            
+    # Unlisted shares LTCG
+    ltcg_unlisted_gain = 0
+    unlisted_sale = cg_data.get("ltcg_unlisted_shares_sale", 0)
+    unlisted_cost = cg_data.get("ltcg_unlisted_shares_cost", 0)
+    if unlisted_sale > 0 and unlisted_cost > 0:
+        purch_fy = cg_data.get("ltcg_unlisted_shares_purchase_fy")
+        sale_fy = cg_data.get("ltcg_unlisted_shares_sale_fy")
+        if purch_fy in CII and sale_fy in CII:
+            indexed_cost = round(unlisted_cost * (CII[sale_fy] / CII[purch_fy]))
+            ltcg_unlisted_gain = max(0, unlisted_sale - indexed_cost)
+            
+    # Property LTCG
+    ltcg_property_gain = 0
+    prop_sale = cg_data.get("ltcg_property_sale", 0)
+    prop_stamp = cg_data.get("ltcg_property_stamp_value", 0)
+    prop_cost = cg_data.get("ltcg_property_cost", 0)
+    deemed_sale = prop_sale
+    if prop_stamp > 1.10 * prop_sale:
+        deemed_sale = prop_stamp
+    if deemed_sale > 0 and prop_cost > 0:
+        purch_fy = cg_data.get("ltcg_property_purchase_fy")
+        sale_fy = cg_data.get("ltcg_property_sale_fy")
+        if purch_fy in CII and sale_fy in CII:
+            indexed_cost = round(prop_cost * (CII[sale_fy] / CII[purch_fy]))
+            ltcg_property_gain = max(0, deemed_sale - indexed_cost)
+            
+    # SGB Sovereign Gold Bonds
+    sgb_ltcg_gain = 0
+    sgb_stcg_gain = 0
+    if not cg_data.get("sgb_held_to_maturity", False):
+        sgb_sale = cg_data.get("sgb_sale", 0)
+        sgb_cost = cg_data.get("sgb_cost", 0)
+        sgb_years = cg_data.get("sgb_holding_period_years", 0)
+        if sgb_sale > 0 and sgb_cost > 0:
+            if sgb_years > 3:
+                purch_fy = cg_data.get("sgb_purchase_fy")
+                sale_fy = cg_data.get("sgb_sale_fy")
+                if purch_fy in CII and sale_fy in CII:
+                    indexed_cost = round(sgb_cost * (CII[sale_fy] / CII[purch_fy]))
+                    sgb_ltcg_gain = max(0, sgb_sale - indexed_cost)
+            else:
+                sgb_stcg_gain = max(0, sgb_sale - sgb_cost)
                 
+    # Equity Grandfathering
+    equity_grandfathered_gain = 0
+    if cg_data.get("equity_held_before_jan2018", False):
+        actual_cost = cg_data.get("equity_actual_cost", 0)
+        fmv_jan2018 = cg_data.get("equity_fmv_jan2018", 0)
+        sale_price = cg_data.get("equity_sale_price", 0)
+        if sale_price > 0:
+            gf_cost = max(actual_cost, min(fmv_jan2018, sale_price))
+            equity_grandfathered_gain = max(0, sale_price - gf_cost)
+            
+    # Aggregate STCG and LTCG before set-off
+    stcg_property_gain = max(0, cg_data.get("stcg_property_sale", 0) - cg_data.get("stcg_property_cost", 0))
+    
+    total_stcg = stcg_equity + stcg_property_gain + sgb_stcg_gain
+    total_ltcg_equity = ltcg_equity + equity_grandfathered_gain
+    total_ltcg_other = ltcg_debt_gain_pre + ltcg_unlisted_gain + ltcg_property_gain + sgb_ltcg_gain
+    
+    # Losses
+    stcl = cg_data.get("stcl", 0)
+    ltcl = cg_data.get("ltcl", 0)
+    
+    # Apply Set-off
+    setoff_res = apply_capital_loss_setoff(total_stcg, total_ltcg_equity, total_ltcg_other, stcl, ltcl)
+    
+    net_stcg = setoff_res["stcg"]
+    net_ltcg_equity = setoff_res["ltcg_equity"]
+    net_ltcg_other = setoff_res["ltcg_other"]
+    
+    # Calculate taxes on net gains
+    exempt_ltcg_amount = min(net_ltcg_equity, 100000)
+    taxable_ltcg_equity = max(0, net_ltcg_equity - 100000)
+    ltcg_equity_tax = round(taxable_ltcg_equity * 0.10)
+    
+    # STCG allocations
+    original_slab_stcg = stcg_property_gain + sgb_stcg_gain
+    original_equity_stcg = stcg_equity
+    
+    reduction = total_stcg - net_stcg
+    allocated_reduction_to_slab = min(original_slab_stcg, reduction)
+    remaining_slab_stcg = original_slab_stcg - allocated_reduction_to_slab
+    
+    remaining_reduction = reduction - allocated_reduction_to_slab
+    remaining_equity_stcg = max(0, original_equity_stcg - remaining_reduction)
+    
+    stcg_equity_tax = round(remaining_equity_stcg * 0.15)
+    
+    # LTCG allocations
+    original_slab_ltcg_other = ltcg_debt_gain_pre
+    original_flat_ltcg_other = ltcg_unlisted_gain + ltcg_property_gain + sgb_ltcg_gain
+    
+    reduction_ltcg = total_ltcg_other - net_ltcg_other
+    allocated_reduction_to_slab_ltcg = min(original_slab_ltcg_other, reduction_ltcg)
+    remaining_slab_ltcg_other = original_slab_ltcg_other - allocated_reduction_to_slab_ltcg
+    
+    remaining_reduction_ltcg = reduction_ltcg - allocated_reduction_to_slab_ltcg
+    remaining_flat_ltcg_other = max(0, original_flat_ltcg_other - remaining_reduction_ltcg)
+    
+    ltcg_other_flat_tax = round(remaining_flat_ltcg_other * 0.20)
+    ltcg_other_slab_tax = round(remaining_slab_ltcg_other * slab_rate)
+    
+    # LTCG Debt post-April 2023
     ltcg_debt_tax_post = round(ltcg_debt_post * slab_rate)
     
-    ltcg_debt_tax = ltcg_debt_tax_pre + ltcg_debt_tax_post
-    total_cg_tax = ltcg_equity_tax + stcg_equity_tax + ltcg_debt_tax
+    # STCG slab tax
+    stcg_slab_tax = round(remaining_slab_stcg * slab_rate)
+    
+    total_cg_tax = ltcg_equity_tax + stcg_equity_tax + ltcg_other_flat_tax + ltcg_other_slab_tax + ltcg_debt_tax_post + stcg_slab_tax
     
     return {
         "ltcg_equity_tax": ltcg_equity_tax,
         "stcg_equity_tax": stcg_equity_tax,
-        "ltcg_debt_tax": ltcg_debt_tax,
+        "ltcg_debt_tax": ltcg_other_flat_tax + ltcg_other_slab_tax + ltcg_debt_tax_post,
         "total_cg_tax": total_cg_tax,
-        "exempt_ltcg_amount": exempt_ltcg_amount
+        "exempt_ltcg_amount": exempt_ltcg_amount,
+        "carry_forward_stcl": setoff_res["carry_forward_stcl"],
+        "carry_forward_ltcl": setoff_res["carry_forward_ltcl"],
+        "remaining_slab_stcg": remaining_slab_stcg
     }
 
 def compare_regimes(income_data: dict, cg_data: dict = None, vda_data: dict = None) -> dict:
+    if cg_data is None:
+        cg_data = income_data
+    if vda_data is None:
+        vda_data = income_data
+        
     old = calculate_old_regime(income_data)
     new = calculate_new_regime(income_data)
     
@@ -553,7 +934,9 @@ def compare_regimes(income_data: dict, cg_data: dict = None, vda_data: dict = No
     if vda_data:
         vda_result = calculate_vda_tax(vda_data, old_rate)
         old_vda_tax = vda_result["vda_tax"]
-        new_vda_tax = vda_result["vda_tax"]
+        
+        vda_result_new = calculate_vda_tax(vda_data, new_rate)
+        new_vda_tax = vda_result_new["vda_tax"]
         
     old_total = old["total_tax"] + old_cg_tax + old_vda_tax
     new_total = new["total_tax"] + new_cg_tax + new_vda_tax
@@ -579,7 +962,6 @@ def compare_regimes(income_data: dict, cg_data: dict = None, vda_data: dict = No
             f"(₹{total_deducs:,} total) are less than the new regime's lower slab benefit."
         )
         
-    
     old.update(calculate_interest_234(income_data, {"total_tax": old_total}))
     new.update(calculate_interest_234(income_data, {"total_tax": new_total}))
     
@@ -589,6 +971,28 @@ def compare_regimes(income_data: dict, cg_data: dict = None, vda_data: dict = No
     old_total = max(0, old_total - relief_89)
     new_total = max(0, new_total - relief_89)
     
+    # Calculate loss carry forward
+    stcl_cf = 0
+    ltcl_cf = 0
+    if cg_data:
+        rec_cg = old_cg if recommended == "old" else new_cg
+        stcl_cf = rec_cg.get("carry_forward_stcl", 0)
+        ltcl_cf = rec_cg.get("carry_forward_ltcl", 0)
+    else:
+        stcl_cf = income_data.get("stcl", 0)
+        ltcl_cf = income_data.get("ltcl", 0)
+        
+    rec_result = old if recommended == "old" else new
+    hp_loss_cf = rec_result.get("unabsorbed_hp_loss", 0)
+    
+    loss_carry_forward = {
+        "capital_loss_stcl": stcl_cf,
+        "capital_loss_ltcl": ltcl_cf,
+        "house_property_loss": hp_loss_cf,
+        "business_loss": income_data.get("business_loss", 0),
+        "speculation_loss": income_data.get("speculation_loss", 0)
+    }
+    
     return {
         "old_regime": old,
         "new_regime": new,
@@ -597,7 +1001,9 @@ def compare_regimes(income_data: dict, cg_data: dict = None, vda_data: dict = No
         "recommended_regime": recommended,
         "savings_amount": savings_amount,
         "savings_explanation": savings_explanation,
-        "relief_89": relief_89
+        "relief_89": relief_89,
+        "loss_carry_forward": loss_carry_forward,
+        "amt_credit_cf": old.get("amt_credit_cf", 0)
     }
 
 def validate_inputs(income_data: dict) -> list[str]:
