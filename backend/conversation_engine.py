@@ -6,7 +6,7 @@ from google import genai
 from supabase import create_client, Client
 from backend.tax_engine import validate_inputs
 
-USE_OLLAMA_ONLY = False
+USE_OLLAMA_ONLY = True
 
 # -- Run in Supabase SQL editor before starting server
 # CREATE TABLE filing_sessions (
@@ -312,7 +312,7 @@ def _chat_with_ollama(messages_history, user_message):
     prompt_messages.append({"role": "user", "content": user_message})
     
     payload = {
-        "model": "glm-4.6:cloud",
+        "model": "gpt-oss:120b-cloud",
         "messages": prompt_messages,
         "stream": False
     }

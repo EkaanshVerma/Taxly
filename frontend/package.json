@@ -10,10 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.16.0",
+    "lucide-react": "^1.16.0",
+    "motion": "^12.40.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.15.0",
+    "tailwindcss": "^4.3.0",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
