@@ -19,7 +19,7 @@ USE_OLLAMA_ONLY = True
 #   updated_at TIMESTAMPTZ DEFAULT now()
 # );
 #
-# CREATE TABLE ca_accounts (
+# CREATE TABLE ca_account
 #   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 #   name TEXT NOT NULL,
 #   email TEXT UNIQUE NOT NULL,

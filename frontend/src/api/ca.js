@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const BASE = import.meta.env.VITE_API_URL || 'https://jmsxi-14-139-240-50.free.pinggy.net'
 
 export const caLogin = (email, password) =>
   axios.post(`${BASE}/ca/login`, { email, password })

@@ -36,7 +36,7 @@ export default function CALoginPage({ setCAToken }) {
       
       {/* Top Navbar */}
       <div style={{ width: '100%', padding: '20px 40px', display: 'flex', alignItems: 'center' }}>
-        <div style={{ fontWeight: 700, fontSize: '24px', color: '#1e3a5f', letterSpacing: '-0.5px' }}>Taxly</div>
+        <img src="/logo.png" alt="Taxly Logo" style={{ height: '64px' }} />
         <div style={{ marginLeft: '8px', fontSize: '12px', fontWeight: 500, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px' }}>CA Portal</div>
       </div>
 

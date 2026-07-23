@@ -123,7 +123,7 @@ export default function LoginPage() {
       <div style={{ background: '#ffffff', width: '100%', maxWidth: '400px', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', overflow: 'hidden' }}>
         
         <div style={{ padding: '32px 32px 24px 32px', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
-          <div style={{ fontWeight: 700, fontSize: '28px', color: '#1e3a5f', letterSpacing: '-0.5px', marginBottom: '8px' }}>Taxly</div>
+          <img src="/logo.png" alt="Taxly Logo" style={{ height: '80px', marginBottom: '16px' }} />
           <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#0f172a', margin: 0 }}>Sign in to your account</h1>
         </div>
         
