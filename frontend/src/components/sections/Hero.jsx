@@ -27,6 +27,84 @@ export default function Hero() {
   const [theme, setTheme] = useState(localStorage.getItem('taxly-hero-theme') || 'dark')
   const phoneRef = useRef(null)
 
+  // Live real-time clock for iPhone status bar
+  const [currentTime, setCurrentTime] = useState(() => {
+    const d = new Date()
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+  })
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const d = new Date()
+      setCurrentTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Interactive phone mini-engine state
+  const [phoneSalary, setPhoneSalary] = useState(1240000)
+  const [userSelectedRegime, setUserSelectedRegime] = useState(null) // null = auto recommend
+
+  // Tax calculation logic for the phone
+  const calculatePhoneTax = (gross) => {
+    // Old Regime
+    const taxableOld = Math.max(0, gross - 50000 - 150000); // 50k std ded + 1.5L 80C
+    let taxOld = 0;
+    if (taxableOld <= 500000) {
+      taxOld = 0;
+    } else {
+      if (taxableOld > 1000000) {
+        taxOld = 112500 + (taxableOld - 1000000) * 0.30;
+      } else if (taxableOld > 500000) {
+        taxOld = 12500 + (taxableOld - 500000) * 0.20;
+      } else if (taxableOld > 250000) {
+        taxOld = (taxableOld - 250000) * 0.05;
+      }
+      taxOld = Math.round(taxOld * 1.04); // 4% cess
+    }
+
+    // New Regime (FY 2025-26 budget slabs)
+    const taxableNew = Math.max(0, gross - 75000); // 75k std ded
+    let taxNew = 0;
+    if (taxableNew <= 700000) {
+      taxNew = 0;
+    } else {
+      if (taxableNew > 1500000) {
+        taxNew = 140000 + (taxableNew - 1500000) * 0.30;
+      } else if (taxableNew > 1200000) {
+        taxNew = 80000 + (taxableNew - 1200000) * 0.20;
+      } else if (taxableNew > 1000000) {
+        taxNew = 50000 + (taxableNew - 1000000) * 0.15;
+      } else if (taxableNew > 700000) {
+        taxNew = 20000 + (taxableNew - 700000) * 0.10;
+      } else if (taxableNew > 300000) {
+        taxNew = (taxableNew - 300000) * 0.05;
+      }
+      taxNew = Math.round(taxNew * 1.04); // 4% cess
+    }
+
+    const estimatedTds = Math.round(gross * 0.082); // typical ~8.2% TDS deduction
+    const autoRec = taxOld <= taxNew ? 'old' : 'new';
+    const activeRegime = userSelectedRegime || autoRec;
+    const finalTax = activeRegime === 'old' ? taxOld : taxNew;
+    const refundOrDue = estimatedTds - finalTax;
+    const savings = Math.abs(taxOld - taxNew);
+
+    return {
+      old: taxOld,
+      new: taxNew,
+      autoRec,
+      activeRegime,
+      tds: estimatedTds,
+      refundOrDue,
+      isRefund: refundOrDue >= 0,
+      savings,
+      deductions: activeRegime === 'old' ? 234000 : 75000,
+    };
+  };
+
+  const phoneTax = calculatePhoneTax(phoneSalary);
+
   useEffect(() => {
     localStorage.setItem('taxly-hero-theme', theme)
   }, [theme])
@@ -38,8 +116,8 @@ export default function Hero() {
     const rect = phoneRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left - rect.width / 2
     const y = e.clientY - rect.top - rect.height / 2
-    const rotateY = (x / (rect.width / 2)) * 6
-    const rotateX = -(y / (rect.height / 2)) * 6
+    const rotateY = (x / (rect.width / 2)) * 5
+    const rotateX = -(y / (rect.height / 2)) * 5
     phoneRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
   }
 
@@ -58,7 +136,6 @@ export default function Hero() {
       navigate(`/chat/${res.data.session_id}`)
     } catch {
       setLoading(false)
-      alert("Couldn't connect to backend. Starting local session...")
       navigate(`/chat/${uuidv4()}`)
     }
   }
@@ -123,42 +200,128 @@ export default function Hero() {
                   <div className="btn-side btn-vol-down"></div>
                   <div className="btn-side btn-power"></div>
                   <div className="iphone-screen">
-                    <div className="dynamic-island"></div>
-                    <div className="status-bar"><span>9:41</span></div>
-                    <div className="app-summary">
-                      <div className="summary-header">
-                        <button className="summary-back">‹</button>
-                        <div className="summary-title-wrap">
-                          <div className="summary-title">Your filing</div>
-                          <div className="summary-sub">AY 2025–26 · ITR-1</div>
+                    <div className="dynamic-island">
+                      <div className="island-indicator"></div>
+                    </div>
+                    
+                    {/* Live interactive status bar with real ticking clock & icons */}
+                    <div className="status-bar">
+                      <span className="status-time">{currentTime}</span>
+                      <div className="status-icons">
+                        <svg className="status-icon" viewBox="0 0 16 12" width="12" height="10" fill="currentColor">
+                          <rect x="0" y="8" width="2" height="4" rx="0.5" />
+                          <rect x="4" y="5" width="2" height="7" rx="0.5" />
+                          <rect x="8" y="2" width="2" height="10" rx="0.5" />
+                          <rect x="12" y="0" width="2" height="12" rx="0.5" />
+                        </svg>
+                        <svg className="status-icon" viewBox="0 0 16 12" width="12" height="10" fill="currentColor">
+                          <path d="M8 10a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm-4.2-3.2a6 6 0 0 1 8.4 0 .8.8 0 0 1-1.1 1.1 4.5 4.5 0 0 0-6.2 0 .8.8 0 0 1-1.1-1.1zm-2.8-2.8a10 10 0 0 1 14 0 .8.8 0 0 1-1.1 1.1 8.5 8.5 0 0 0-11.8 0 .8.8 0 0 1-1.1-1.1z" />
+                        </svg>
+                        <div className="battery-icon">
+                          <div className="battery-fill"></div>
                         </div>
                       </div>
-                      <div className="summary-body">
-                        <div className="sum-card">
-                          <div className="sum-section-label">Total refund due</div>
-                          <div className="sum-row" style={{ border: 'none', paddingTop: 0 }}><span className="sum-row-val big">₹18,420</span></div>
-                          <div className="sum-row"><span className="sum-row-label">Gross salary</span><span className="sum-row-val">₹12,40,000</span></div>
-                          <div className="sum-row"><span className="sum-row-label">Deductions</span><span className="sum-row-val">−₹2,34,000</span></div>
-                          <div className="sum-row"><span className="sum-row-label">TDS paid</span><span className="sum-row-val">₹1,00,500</span></div>
+                    </div>
+
+                    <div className="app-summary">
+                      <div className="summary-header">
+                        <button className="summary-back" onClick={() => setPhoneSalary(1240000)}>‹</button>
+                        <div className="summary-title-wrap">
+                          <div className="summary-title">Live Tax Estimator</div>
+                          <div className="summary-sub">AY 2025–26 · Interactive Preview</div>
                         </div>
+                      </div>
+
+                      <div className="summary-body">
+                        {/* Interactive Salary Selector Inside Phone */}
+                        <div className="phone-salary-card">
+                          <div className="phone-salary-label">
+                            <span>Your Gross Annual Salary</span>
+                            <span className="phone-salary-val">₹{(phoneSalary / 100000).toFixed(1)}L</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="400000"
+                            max="3000000"
+                            step="50000"
+                            value={phoneSalary}
+                            onChange={(e) => setPhoneSalary(Number(e.target.value))}
+                            className="phone-slider"
+                          />
+                          <div className="phone-presets">
+                            {[800000, 1240000, 1800000, 2500000].map(amt => (
+                              <button
+                                key={amt}
+                                className={`phone-preset-btn ${phoneSalary === amt ? 'active' : ''}`}
+                                onClick={() => setPhoneSalary(amt)}
+                              >
+                                ₹{amt / 100000}L
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Interactive Summary Card */}
                         <div className="sum-card">
-                          <div className="sum-section-label">Regime comparison</div>
+                          <div className="sum-section-label">
+                            {phoneTax.isRefund ? 'Estimated Refund Due' : 'Estimated Tax Payable'}
+                          </div>
+                          <div className="sum-row" style={{ border: 'none', paddingTop: 0 }}>
+                            <span className={`sum-row-val big ${phoneTax.isRefund ? 'refund' : 'payable'}`}>
+                              ₹{Math.abs(phoneTax.refundOrDue).toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <div className="sum-row">
+                            <span className="sum-row-label">Gross salary</span>
+                            <span className="sum-row-val">₹{phoneSalary.toLocaleString('en-IN')}</span>
+                          </div>
+                          <div className="sum-row">
+                            <span className="sum-row-label">Basic deductions</span>
+                            <span className="sum-row-val">−₹{phoneTax.deductions.toLocaleString('en-IN')}</span>
+                          </div>
+                          <div className="sum-row">
+                            <span className="sum-row-label">TDS credited (~8%)</span>
+                            <span className="sum-row-val">₹{phoneTax.tds.toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+
+                        {/* Interactive Regime Comparison Cards */}
+                        <div className="sum-card">
+                          <div className="sum-section-label">Regime comparison (tap to toggle)</div>
                           <div className="regime-grid">
-                            <div className="regime-card winner">
+                            <div
+                              className={`regime-card ${phoneTax.activeRegime === 'old' ? 'winner active-regime' : ''}`}
+                              onClick={() => setUserSelectedRegime('old')}
+                            >
                               <div className="regime-card-label">Old regime</div>
-                              <div className="regime-card-amt">₹82K</div>
-                              <div className="regime-card-badge">Recommended</div>
+                              <div className="regime-card-amt">₹{(phoneTax.old / 1000).toFixed(0)}K</div>
+                              {phoneTax.autoRec === 'old' && <div className="regime-card-badge">Best Choice</div>}
                             </div>
-                            <div className="regime-card">
+                            <div
+                              className={`regime-card ${phoneTax.activeRegime === 'new' ? 'winner active-regime' : ''}`}
+                              onClick={() => setUserSelectedRegime('new')}
+                            >
                               <div className="regime-card-label">New regime</div>
-                              <div className="regime-card-amt">₹96K</div>
+                              <div className="regime-card-amt">₹{(phoneTax.new / 1000).toFixed(0)}K</div>
+                              {phoneTax.autoRec === 'new' && <div className="regime-card-badge">Best Choice</div>}
                             </div>
                           </div>
                         </div>
-                        <div className="savings-tag">
-                          <div className="savings-text"><strong>CA-reviewed &amp; approved</strong>Saved ₹13,520 vs. New Regime</div>
+
+                        {/* Halfway Prompt & Prompt to Full Tax Calculator */}
+                        <div className="phone-calc-prompt">
+                          <div className="phone-prompt-head">
+                            <span className="phone-pulse-dot"></span>
+                            <strong>Halfway estimated!</strong>
+                          </div>
+                          <p className="phone-prompt-text">
+                            HRA exemption, 80D medical &amp; 121+ deductions are pending CA review.
+                          </p>
                         </div>
-                        <button className="pay-btn" onClick={startFiling}>Download ITR XML →</button>
+
+                        <button className="pay-btn phone-cta-btn" onClick={startFiling}>
+                          Calculate full tax &amp; deductions →
+                        </button>
                       </div>
                     </div>
                     <div className="home-indicator"></div>
@@ -166,11 +329,14 @@ export default function Hero() {
                 </div>
               </div>
             </div>
+
             <div className="float-chip chip-chat float-bounce" style={{ animationDelay: '1.4s' }}>
               <div className="av">T</div>
               <div className="txt"><b>Taxly:</b> <TypingText text="Hi! I'll help you file in 20 minutes. What's your gross salary?" /></div>
             </div>
-            <div className="float-chip chip-pct float-bounce" style={{ animationDelay: '1.8s' }}>+18%</div>
+            <div className="float-chip chip-pct float-bounce" style={{ animationDelay: '1.8s' }}>
+              +{Math.max(12, Math.round((phoneTax.savings / (phoneSalary || 1)) * 100))}%
+            </div>
           </div>
         </div>
       </div>

@@ -224,42 +224,116 @@
 /* status bar */
 .status-bar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 22px 4px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink);
+  padding: 14px 20px 4px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink);
+  z-index: 10;
+}
+.status-time { font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+.status-icons { display: flex; align-items: center; gap: 5px; color: var(--ink); }
+.status-icon { flex-shrink: 0; }
+.battery-icon {
+  width: 18px; height: 9px; border: 1.2px solid var(--ink); border-radius: 2.5px;
+  padding: 1px; display: flex; align-items: center; position: relative;
+}
+.battery-icon::after {
+  content: ''; position: absolute; right: -2.5px; top: 2px; width: 1.5px; height: 3px;
+  background: var(--ink); border-radius: 0 1px 1px 0;
+}
+.battery-fill {
+  width: 75%; height: 100%; background: var(--green); border-radius: 1px;
+}
+
+/* Dynamic island pulsing indicator */
+.dynamic-island {
+  position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+  width: 82px; height: 22px; background: #000; border-radius: 20px; z-index: 20;
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;
+}
+.island-indicator {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: blink 2s infinite ease-in-out;
 }
 
 /* ---- APP UI (matches Taxly design system) ---- */
 .app-summary { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-.app-summary .summary-header { padding: 6px 16px 0; display: flex; align-items: center; gap: 8px; border-bottom: none; }
+.app-summary .summary-header { padding: 4px 14px 0; display: flex; align-items: center; gap: 8px; border-bottom: none; }
 .app-summary .summary-back {
-  width: 26px; height: 26px; background: var(--paper-2); border: none; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink);
+  width: 24px; height: 24px; background: var(--paper-2); border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--ink);
+  cursor: pointer; transition: transform 0.15s;
 }
+.app-summary .summary-back:hover { transform: scale(1.1); }
 .app-summary .summary-title-wrap { flex: 1; }
-.app-summary .summary-title { font-family: var(--serif); font-size: 17px; color: var(--ink); line-height: 1.1; }
+.app-summary .summary-title { font-family: var(--serif); font-size: 16px; color: var(--ink); line-height: 1.1; font-weight: 600; }
 .app-summary .summary-sub { font-size: 9px; color: var(--ink-3); margin-top: 1px; }
 
-.app-summary .summary-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.app-summary .summary-body { padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 7px; flex: 1; overflow-y: auto; }
 
-.app-summary .sum-card { background: #fff; border: 1px solid var(--paper-3); border-radius: 14px; padding: 12px; }
-.app-summary .sum-section-label {
-  font-size: 8.5px; font-weight: 600; color: var(--ink-3); text-transform: uppercase;
-  letter-spacing: .07em; margin-bottom: 8px;
+/* Phone Salary Selector */
+.phone-salary-card {
+  background: var(--paper-2); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px;
 }
-.app-summary .sum-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; font-size: 10.5px;}
+.phone-salary-label { display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: var(--ink-2); font-weight: 500; }
+.phone-salary-val { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--blue); }
+.phone-slider {
+  width: 100%; height: 4px; accent-color: var(--blue); cursor: pointer; border-radius: 2px;
+}
+.phone-presets { display: flex; gap: 4px; justify-content: space-between; margin-top: 2px; }
+.phone-preset-btn {
+  flex: 1; background: #fff; border: 1px solid var(--paper-3); border-radius: 6px;
+  font-size: 8.5px; font-weight: 600; font-family: var(--mono); padding: 3px 0;
+  color: var(--ink-2); cursor: pointer; transition: all 0.15s;
+}
+.phone-preset-btn:hover, .phone-preset-btn.active {
+  background: var(--blue); color: #fff; border-color: var(--blue);
+}
+
+.app-summary .sum-card { background: #fff; border: 1px solid var(--paper-3); border-radius: 12px; padding: 9px 10px; }
+.app-summary .sum-section-label {
+  font-size: 8px; font-weight: 700; color: var(--ink-3); text-transform: uppercase;
+  letter-spacing: .06em; margin-bottom: 6px;
+}
+.app-summary .sum-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; font-size: 9.5px;}
 .app-summary .sum-row + .sum-row { border-top: 1px solid var(--paper-2); }
 .app-summary .sum-row-label { color: var(--ink-2); }
 .app-summary .sum-row-val { font-weight: 600; color: var(--ink); font-family: var(--mono); }
-.app-summary .sum-row-val.big { font-family: var(--serif); font-size: 20px; color: var(--green-app); }
+.app-summary .sum-row-val.big { font-family: var(--serif); font-size: 18px; font-weight: 700; }
+.app-summary .sum-row-val.big.refund { color: var(--green); }
+.app-summary .sum-row-val.big.payable { color: #D97706; }
 
-.regime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.regime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .regime-card {
-  border: 1.4px solid var(--paper-3); border-radius: 10px; padding: 9px; text-align: center;
+  border: 1.4px solid var(--paper-3); border-radius: 9px; padding: 7px; text-align: center;
+  cursor: pointer; transition: all 0.2s; user-select: none;
 }
-.regime-card.winner { border-color: var(--blue); background: var(--blue-light); }
-.regime-card-label { font-size: 8px; color: var(--ink-3); margin-bottom: 3px; }
-.regime-card-amt { font-size: 20px; font-weight: 600; color: var(--ink); margin-top: 4px; }
-.regime-card-badge { display: inline-block; background: var(--blue); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 6px; }
+.regime-card:hover { transform: translateY(-1px); }
+.regime-card.active-regime { border-color: var(--blue); background: rgba(27,79,216,0.06); box-shadow: 0 0 0 1px var(--blue); }
+.regime-card.winner { border-color: var(--green); background: rgba(13,122,95,0.06); }
+.regime-card.winner.active-regime { border-color: var(--blue); }
+.regime-card-label { font-size: 8px; color: var(--ink-3); margin-bottom: 2px; }
+.regime-card-amt { font-size: 16px; font-weight: 700; color: var(--ink); margin-top: 2px; font-family: var(--mono); }
+.regime-card-badge { display: inline-block; background: var(--green); color: #fff; font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 4px; margin-top: 4px; }
+
+/* Phone Halfway Prompt */
+.phone-calc-prompt {
+  background: linear-gradient(135deg, rgba(27,79,216,0.08), rgba(13,122,95,0.08));
+  border: 1px dashed rgba(27,79,216,0.3); border-radius: 9px; padding: 6px 8px;
+}
+.phone-prompt-head { display: flex; align-items: center; gap: 5px; font-size: 9.5px; color: var(--blue); }
+.phone-pulse-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--blue);
+  animation: blink 1.5s infinite ease-in-out;
+}
+.phone-prompt-text { font-size: 8px; color: var(--ink-2); line-height: 1.35; margin-top: 2px; }
+
+.phone-cta-btn {
+  background: linear-gradient(135deg, var(--ink), #1A2E5A) !important;
+  color: #fff !important; font-size: 10.5px !important; padding: 9px !important;
+  border-radius: 12px !important; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+}
+.phone-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
 
 /* CALCULATOR SECTION */
 .calculator-section { background: #fff; padding: 80px 20px; color: var(--ink); border-bottom: 1px solid #eaeaea; }
