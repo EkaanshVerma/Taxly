@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE = import.meta.env.VITE_API_URL || 'https://jmsxi-14-139-240-50.free.pinggy.net'
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export const createSession = (userId) =>
   axios.post(`${BASE}/sessions`, { user_id: userId })

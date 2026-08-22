@@ -19,12 +19,20 @@ from typing import Optional, Dict, Any, List
 
 load_dotenv()
 
-from backend.conversation_engine import create_session, get_session, chat, save_session
-from backend.tax_engine import compare_regimes
-from backend.itr_xml_generator import generate_itr1_xml, generate_itr2_xml, validate_xml
-from backend.form16_parser import parse_form16, map_to_income_data, LowConfidenceError
-from backend.conversation_engine import _init_supabase
-import backend.conversation_engine as ce
+try:
+    from backend.conversation_engine import create_session, get_session, chat, save_session
+    from backend.tax_engine import compare_regimes
+    from backend.itr_xml_generator import generate_itr1_xml, generate_itr2_xml, validate_xml
+    from backend.form16_parser import parse_form16, map_to_income_data, LowConfidenceError
+    from backend.conversation_engine import _init_supabase
+    import backend.conversation_engine as ce
+except ModuleNotFoundError:
+    from conversation_engine import create_session, get_session, chat, save_session
+    from tax_engine import compare_regimes
+    from itr_xml_generator import generate_itr1_xml, generate_itr2_xml, validate_xml
+    from form16_parser import parse_form16, map_to_income_data, LowConfidenceError
+    from conversation_engine import _init_supabase
+    import conversation_engine as ce
 
 local_ca_accounts = {}
 otp_store = {}

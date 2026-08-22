@@ -302,9 +302,244 @@ def validate_xml(xml_str: str, form_type: str) -> list[str]:
                 
     if form_type == "ITR2":
         req_tags.append("TotalCGTax")
+    elif form_type == "ITR3":
+        req_tags.extend(["ScheduleBP", "ProfitAndLoss"])
+    elif form_type == "ITR4":
+        req_tags.append("ScheduleBP")
         
     for tag in req_tags:
         if root.find(f".//{tag}") is None:
             errors.append(f"Missing tag: <{tag}>")
             
     return errors
+
+
+# ── ITR-4 (Sugam) — Presumptive Income ───────────────────────────
+
+def generate_itr4_xml(taxpayer: dict, income_data: dict, tax_result: dict, presumptive_result: dict = None) -> str:
+    """Generate ITR-4 XML for presumptive income under 44AD / 44ADA / 44AE."""
+    root = _build_base_itr_tree("ITR4", taxpayer, income_data, tax_result)
+    form_root = root.find("ITR4")
+    
+    if presumptive_result is None:
+        presumptive_result = {}
+    
+    # Schedule BP — Business or Profession (Presumptive)
+    sched_bp = ET.SubElement(form_root, "ScheduleBP")
+    
+    scheme = income_data.get("presumptive_scheme", "44ADA")
+    gross_receipts = income_data.get("gross_receipts", 0)
+    
+    if scheme == "44AD":
+        # Section 44AD — Goods business (8% of turnover, 6% for digital receipts)
+        sec44ad = ET.SubElement(sched_bp, "Sec44AD")
+        ET.SubElement(sec44ad, "NatureOfBusiness").text = income_data.get("business_nature", "Trading")
+        ET.SubElement(sec44ad, "GrossTurnover").text = str(gross_receipts)
+        
+        digital_receipts = income_data.get("digital_receipts", 0)
+        cash_receipts = max(0, gross_receipts - digital_receipts)
+        
+        presumptive_digital = round(digital_receipts * 0.06)
+        presumptive_cash = round(cash_receipts * 0.08)
+        total_presumptive = presumptive_result.get("presumptive_income", presumptive_digital + presumptive_cash)
+        
+        ET.SubElement(sec44ad, "GrossReceiptsDigital").text = str(digital_receipts)
+        ET.SubElement(sec44ad, "GrossReceiptsCash").text = str(cash_receipts)
+        ET.SubElement(sec44ad, "PresumptiveIncomeDigital").text = str(presumptive_digital)
+        ET.SubElement(sec44ad, "PresumptiveIncomeCash").text = str(presumptive_cash)
+        ET.SubElement(sec44ad, "TotalPresumptiveIncome").text = str(total_presumptive)
+        
+    elif scheme == "44ADA":
+        # Section 44ADA — Professionals (50% of gross receipts)
+        sec44ada = ET.SubElement(sched_bp, "Sec44ADA")
+        ET.SubElement(sec44ada, "NatureOfProfession").text = income_data.get("profession_type", "Professional Services")
+        ET.SubElement(sec44ada, "GrossReceipts").text = str(gross_receipts)
+        
+        total_presumptive = presumptive_result.get("presumptive_income", round(gross_receipts * 0.50))
+        ET.SubElement(sec44ada, "PresumptiveIncome").text = str(total_presumptive)
+        
+    elif scheme == "44AE":
+        # Section 44AE — Goods carriage (₹7500 per vehicle per month)
+        sec44ae = ET.SubElement(sched_bp, "Sec44AE")
+        num_vehicles = income_data.get("num_vehicles", 1)
+        months_operated = income_data.get("months_operated", 12)
+        
+        ET.SubElement(sec44ae, "NumberOfVehicles").text = str(num_vehicles)
+        ET.SubElement(sec44ae, "MonthsOperated").text = str(months_operated)
+        
+        total_presumptive = presumptive_result.get("presumptive_income", num_vehicles * 7500 * months_operated)
+        ET.SubElement(sec44ae, "PresumptiveIncome").text = str(total_presumptive)
+    
+    ET.SubElement(sched_bp, "ProfitFromBusiness").text = str(
+        presumptive_result.get("presumptive_income", 0)
+    )
+    
+    # Also add salary schedule if user has salary income too
+    salary = income_data.get("gross_salary", 0)
+    if salary > 0:
+        sched_s = ET.SubElement(form_root, "ScheduleS")
+        emp = ET.SubElement(sched_s, "Employer")
+        ET.SubElement(emp, "EmployerName").text = taxpayer.get("employer_name", "")
+        ET.SubElement(emp, "GrossSalary").text = str(salary)
+        std_ded = tax_result.get("deduction_breakdown", {}).get("standard_deduction", 0)
+        ET.SubElement(emp, "StandardDeduction").text = str(std_ded)
+        ET.SubElement(emp, "NetSalary").text = str(max(0, salary - std_ded))
+    
+    xml_str = ET.tostring(root, encoding="utf-8", xml_declaration=True).decode("utf-8")
+    return xml_str
+
+
+# ── ITR-3 — Business / Profession (Non-Presumptive) ──────────────
+
+def generate_itr3_xml(taxpayer: dict, income_data: dict, tax_result: dict, 
+                      business_result: dict = None, cg_result: dict = None) -> str:
+    """Generate ITR-3 XML for business/professional income with full P&L."""
+    root = _build_base_itr_tree("ITR3", taxpayer, income_data, tax_result)
+    form_root = root.find("ITR3")
+    
+    if business_result is None:
+        business_result = {}
+    
+    # Schedule BP — Business or Profession
+    sched_bp = ET.SubElement(form_root, "ScheduleBP")
+    
+    gross_receipts = income_data.get("gross_receipts", 0)
+    business_expenses = income_data.get("business_expenses", 0)
+    depreciation = income_data.get("depreciation", 0)
+    net_profit = gross_receipts - business_expenses - depreciation
+    
+    ET.SubElement(sched_bp, "NatureOfBusiness").text = income_data.get("business_nature", "Business")
+    ET.SubElement(sched_bp, "GrossTurnover").text = str(gross_receipts)
+    ET.SubElement(sched_bp, "GrossReceipts").text = str(gross_receipts)
+    ET.SubElement(sched_bp, "TotalExpenses").text = str(business_expenses)
+    ET.SubElement(sched_bp, "Depreciation").text = str(depreciation)
+    ET.SubElement(sched_bp, "NetProfit").text = str(net_profit)
+    ET.SubElement(sched_bp, "ProfitFromBusiness").text = str(max(0, net_profit))
+    
+    # Profit & Loss Account
+    pl = ET.SubElement(form_root, "ProfitAndLoss")
+    ET.SubElement(pl, "Revenue").text = str(gross_receipts)
+    
+    expenses_el = ET.SubElement(pl, "Expenses")
+    ET.SubElement(expenses_el, "PurchasesOfGoods").text = str(income_data.get("purchases", 0))
+    ET.SubElement(expenses_el, "EmployeeBenefitExpense").text = str(income_data.get("employee_expense", 0))
+    ET.SubElement(expenses_el, "RentExpense").text = str(income_data.get("office_rent", 0))
+    ET.SubElement(expenses_el, "Depreciation").text = str(depreciation)
+    ET.SubElement(expenses_el, "OtherExpenses").text = str(income_data.get("other_expenses", 0))
+    ET.SubElement(expenses_el, "TotalExpenses").text = str(business_expenses)
+    
+    ET.SubElement(pl, "ProfitBeforeTax").text = str(net_profit)
+    
+    # Balance Sheet
+    bs = ET.SubElement(form_root, "BalanceSheet")
+    
+    assets = ET.SubElement(bs, "Assets")
+    ET.SubElement(assets, "FixedAssets").text = str(income_data.get("fixed_assets", 0))
+    ET.SubElement(assets, "CurrentAssets").text = str(income_data.get("current_assets", 0))
+    ET.SubElement(assets, "CashAndBank").text = str(income_data.get("cash_and_bank", 0))
+    ET.SubElement(assets, "TotalAssets").text = str(
+        income_data.get("fixed_assets", 0) + income_data.get("current_assets", 0) + income_data.get("cash_and_bank", 0)
+    )
+    
+    liabilities = ET.SubElement(bs, "Liabilities")
+    ET.SubElement(liabilities, "Capital").text = str(income_data.get("capital", 0))
+    ET.SubElement(liabilities, "Reserves").text = str(income_data.get("reserves", 0))
+    ET.SubElement(liabilities, "SecuredLoans").text = str(income_data.get("secured_loans", 0))
+    ET.SubElement(liabilities, "UnsecuredLoans").text = str(income_data.get("unsecured_loans", 0))
+    ET.SubElement(liabilities, "CurrentLiabilities").text = str(income_data.get("current_liabilities", 0))
+    
+    # Schedule Depreciation
+    if depreciation > 0:
+        sched_dep = ET.SubElement(form_root, "ScheduleDepreciation")
+        ET.SubElement(sched_dep, "WDVBeginning").text = str(income_data.get("wdv_opening", 0))
+        ET.SubElement(sched_dep, "AdditionsDuringYear").text = str(income_data.get("asset_additions", 0))
+        ET.SubElement(sched_dep, "DepreciationAmount").text = str(depreciation)
+        ET.SubElement(sched_dep, "WDVClosing").text = str(
+            income_data.get("wdv_opening", 0) + income_data.get("asset_additions", 0) - depreciation
+        )
+    
+    # Capital Gains (if any)
+    if cg_result:
+        sched_cg = ET.SubElement(form_root, "ScheduleCGFor23")
+        st_cap = ET.SubElement(sched_cg, "ShortTermCap")
+        st_eq = ET.SubElement(st_cap, "EquityMFonSTT")
+        ET.SubElement(st_eq, "TaxSTCG").text = str(cg_result.get("stcg_equity_tax", 0))
+        lt_cap = ET.SubElement(sched_cg, "LongTermCap")
+        lt_eq = ET.SubElement(lt_cap, "EquityMFonSTT")
+        ET.SubElement(lt_eq, "TaxLTCG").text = str(cg_result.get("ltcg_equity_tax", 0))
+        ET.SubElement(sched_cg, "TotalCGTax").text = str(cg_result.get("total_cg_tax", 0))
+    
+    # Foreign Assets
+    if income_data.get("has_foreign_assets") and income_data.get("foreign_assets"):
+        sched_fa = ET.SubElement(form_root, "ScheduleFA")
+        for fa in income_data.get("foreign_assets"):
+            fa_el = ET.SubElement(sched_fa, "ForeignAsset")
+            ET.SubElement(fa_el, "CountryName").text = fa.get("country", "")
+            ET.SubElement(fa_el, "PeakBalanceDuringYear").text = str(fa.get("peak_balance", 0))
+    
+    xml_str = ET.tostring(root, encoding="utf-8", xml_declaration=True).decode("utf-8")
+    return xml_str
+
+
+# ── Smart ITR Form Selector ──────────────────────────────────────
+
+def select_itr_form(income_data: dict) -> str:
+    """
+    Deterministically selects the correct ITR form based on income profile.
+    Returns one of: ITR1, ITR2, ITR3, ITR4, ITR5, ITR6, ITR7
+    """
+    entity_type = income_data.get("entity_type", "individual")
+    
+    # Entity-level routing (non-individual)
+    if entity_type == "company":
+        return "ITR6"
+    if entity_type in ("trust", "political_party", "research_institution"):
+        return "ITR7"
+    if entity_type in ("firm", "llp", "aop", "boi"):
+        return "ITR5"
+    
+    # Individual / HUF routing
+    has_business = (
+        income_data.get("is_freelancer", False) or 
+        income_data.get("gross_receipts", 0) > 0 or
+        income_data.get("has_business_income", False)
+    )
+    
+    if has_business:
+        gross_receipts = income_data.get("gross_receipts", 0)
+        total_income = income_data.get("gross_salary", 0) + gross_receipts
+        
+        # Check if eligible for presumptive (44AD: ₹3Cr for digital, 44ADA: ₹75L)
+        scheme = income_data.get("presumptive_scheme", "")
+        is_presumptive = income_data.get("use_presumptive", False)
+        
+        if scheme == "44AD" and gross_receipts > 30000000:
+            is_presumptive = False
+        elif scheme == "44ADA" and gross_receipts > 7500000:
+            is_presumptive = False
+        elif scheme == "44AE":
+            is_presumptive = True  # 44AE is always presumptive
+        elif not scheme and gross_receipts <= 7500000:
+            is_presumptive = True  # Default to presumptive if under limit
+        
+        if is_presumptive and total_income <= 5000000:
+            return "ITR4"
+        else:
+            return "ITR3"
+    
+    # Salaried / investment income only
+    has_cg = income_data.get("has_capital_gains", False)
+    has_fa = income_data.get("has_foreign_assets", False)
+    has_vda = income_data.get("has_vda", False)
+    multi_hp = income_data.get("num_properties", 1) > 1
+    total_income = income_data.get("gross_salary", 0)
+    has_other_sources = (
+        income_data.get("fd_interest", 0) > 0 or
+        income_data.get("dividend_income", 0) > 0
+    )
+    
+    if has_cg or has_fa or has_vda or multi_hp or total_income > 5000000:
+        return "ITR2"
+    
+    return "ITR1"
+

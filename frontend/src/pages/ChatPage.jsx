@@ -94,7 +94,7 @@ export default function ChatPage() {
       <div className="chat-header">
         <button className="chat-header-back" onClick={() => navigate('/')}>←</button>
         <div className="chat-header-info">
-          <img src="/logo.png" alt="Taxly Logo" className="chat-header-logo" style={{ height: '36px' }} />
+          <img src="/logo-white.png" alt="Taxly Logo" className="chat-header-logo" style={{ height: '36px' }} />
           <div className="chat-header-sub">Your tax assistant · Online</div>
         </div>
         <label className="chat-header-upload" style={{cursor:'pointer'}}>

@@ -1,0 +1,128 @@
+.pricing-subtitle {
+  text-align: center;
+  font-size: 20px !important;
+  max-width: 600px;
+  margin: 0 auto 60px auto !important;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 60px;
+}
+
+.pricing-card {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  padding: 32px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-card.recommended {
+  border: 2px solid var(--green);
+  box-shadow: 0 8px 30px rgba(46, 189, 133, 0.15);
+  transform: translateY(-10px);
+}
+
+.badge-popular {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.pricing-card h3 {
+  font-size: 20px;
+  margin: 0 0 16px 0;
+  color: var(--ink-2);
+}
+
+.pricing-card .price {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+.pricing-card .price span {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.pricing-card .desc {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin-bottom: 32px;
+  min-height: 42px;
+}
+
+.pricing-card .features {
+  flex: 1;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 0 32px 0 !important;
+}
+
+.pricing-card .features li {
+  font-size: 14px;
+  margin-bottom: 16px !important;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pricing-card .features .check { color: var(--green); font-weight: bold; }
+.pricing-card .features .cross { color: #ff4d4f; font-weight: bold; }
+
+.pricing-card .btn-cta {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.tier-quiz-banner {
+  background: var(--blue-light);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+.tier-quiz-banner h3 {
+  color: var(--blue);
+  margin-top: 0;
+}
+
+.tier-quiz-banner p {
+  color: var(--ink-2);
+  margin-bottom: 24px !important;
+}
+
+.btn-secondary {
+  display: inline-block;
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.btn-secondary:hover { opacity: 0.9; color: #fff; }
+
+@media (max-width: 900px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-card.recommended { transform: none; }
+}

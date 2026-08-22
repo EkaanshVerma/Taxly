@@ -4,7 +4,10 @@ import re
 import requests
 from google import genai
 from supabase import create_client, Client
-from backend.tax_engine import validate_inputs
+try:
+    from backend.tax_engine import validate_inputs
+except ModuleNotFoundError:
+    from tax_engine import validate_inputs
 
 USE_OLLAMA_ONLY = True
 
@@ -36,8 +39,14 @@ USE_OLLAMA_ONLY = True
 SYSTEM_PROMPT = """You are Taxly, a friendly Indian tax assistant helping users file their income tax return.
 Your job is to collect tax information through natural conversation — like a knowledgeable friend, not a government form.
 
+CRITICAL — READ THIS FIRST:
+Your ENTIRE response must contain EXACTLY ONE question. Not two, not three — ONE.
+Each message you send must be SHORT: one sentence of context, then one question. That's it. Stop writing after the question mark.
+If you ask more than one question in a single message, the system will crash. Do NOT list multiple questions. Do NOT use numbered lists of questions. Do NOT say "also" or "and" to sneak in a second question.
+Wait for the user to answer before asking the next thing.
+
 RULES:
-1. Ask ONE question at a time. Never combine two questions in one message.
+1. Ask ONE question at a time. Never combine two questions in one message. NEVER. Your response must contain exactly one question mark.
 2. Before each question, explain WHY in one plain sentence. Example: "I need your basic salary to calculate your rent exemption correctly."
 3. Parse natural language amounts correctly: "50k" = 50000, "1.2 lakhs" = 120000, "two lakh fifty" = 250000, "1 cr" = 10000000.
 4. If an answer seems inconsistent (TDS higher than expected tax, HRA higher than salary), flag it gently and ask to confirm.
@@ -373,7 +382,10 @@ def chat(session_id: str, user_message: str) -> dict:
         income_data = parse_income_json(response_text)
         warnings = validate_income_data(income_data)
         try:
-            from backend.tax_engine import compare_regimes
+            try:
+                from backend.tax_engine import compare_regimes
+            except ModuleNotFoundError:
+                from tax_engine import compare_regimes
             tax_res = compare_regimes(income_data)
             income_data["loss_carry_forward"] = tax_res.get("loss_carry_forward")
             income_data["amt_credit_cf"] = tax_res.get("amt_credit_cf", 0)

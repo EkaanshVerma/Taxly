@@ -1,0 +1,69 @@
+/* ── Shared section design tokens ── */
+:root {
+  --sec-paper: #F7F6F2;
+  --sec-paper-2: #EFEEE9;
+  --sec-paper-3: #E2E1DC;
+  --sec-ink: #0D1117;
+  --sec-ink-2: #4A4F5C;
+  --sec-ink-3: #8A8FA3;
+  --sec-blue: #1B4FD8;
+  --sec-blue-light: #EBF0FF;
+  --sec-green: #0D7A5F;
+  --sec-green-light: #E6F5F0;
+  --sec-green-mid: #B8E5D5;
+  --sec-serif: 'Instrument Serif', 'Bodoni Moda', serif;
+  --sec-sans: 'DM Sans', system-ui, sans-serif;
+  --sec-mono: 'IBM Plex Mono', monospace;
+  --sec-radius: 16px;
+  --sec-max-w: 1140px;
+}
+
+/* ── Base section layout ── */
+.sec { padding: 100px 24px; }
+.sec-inner { max-width: var(--sec-max-w); margin: 0 auto; }
+.sec h2 {
+  font-family: var(--sec-serif); font-size: clamp(32px, 4vw, 44px);
+  font-weight: 400; color: var(--sec-ink); text-align: center; margin-bottom: 12px;
+  line-height: 1.15; letter-spacing: -0.01em;
+}
+.sec .sec-sub {
+  text-align: center; font-size: 18px; color: var(--sec-ink-2);
+  max-width: 640px; margin: 0 auto 56px; line-height: 1.6; font-family: var(--sec-sans);
+}
+
+/* ── Scroll reveal ── */
+.sec { opacity: 1; transform: translateY(0); transition: opacity 0.7s ease, transform 0.7s ease; }
+
+
+/* ── Shared card style ── */
+.sec-card {
+  background: #fff; border: 1px solid var(--sec-paper-3); border-radius: var(--sec-radius);
+  padding: 28px; transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.sec-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
+
+/* ── CTA button ── */
+.sec-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--sec-ink); color: #fff; border: none; border-radius: 999px;
+  padding: 14px 28px; font-size: 15px; font-weight: 600; font-family: var(--sec-sans);
+  cursor: pointer; text-decoration: none; transition: background 0.2s, transform 0.2s;
+}
+.sec-cta:hover { background: #1a1f2e; transform: translateY(-1px); }
+.sec-cta-green { background: var(--sec-green); }
+.sec-cta-green:hover { background: #0a6550; }
+.sec-cta-blue { background: var(--sec-blue); }
+.sec-cta-blue:hover { background: #1643b5; }
+
+/* ── Badge ── */
+.sec-badge {
+  display: inline-block; font-size: 12px; font-weight: 600; padding: 4px 10px;
+  border-radius: 6px; letter-spacing: 0.02em;
+}
+.sec-badge-green { background: var(--sec-green-light); color: var(--sec-green); }
+.sec-badge-blue { background: var(--sec-blue-light); color: var(--sec-blue); }
+
+@media (max-width: 768px) {
+  .sec { padding: 64px 16px; }
+  .sec .sec-sub { font-size: 16px; margin-bottom: 40px; }
+}

@@ -1,0 +1,10 @@
+@import './LandingPage.css';
+@import '../components/sections/sections.css';
+
+.home-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--sec-paper, #F7F6F2);
+  color: var(--sec-ink, #0D1117);
+  overflow-x: hidden;
+}
