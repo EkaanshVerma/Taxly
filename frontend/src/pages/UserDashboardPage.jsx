@@ -1,333 +1,356 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getSessions, getSession, createSession, downloadXml } from '../api/taxly'
-import { v4 as uuidv4 } from 'uuid'
+import { useNavigate } from 'react-router-dom'
+import { getSessions, createSession, downloadXml } from '../api/taxly'
+import Navbar from '../components/Navbar'
+import { useToast } from '../components/ToastContext'
+
+const AY_LABEL = { '2526': 'AY 2025–26', '2425': 'AY 2024–25' }
+
+const STATUS_COLOR = {
+  complete: { bg: '#DCFCE7', text: '#166534', label: 'Filed' },
+  in_progress: { bg: '#FEF9C3', text: '#854D0E', label: 'In Progress' },
+  pending: { bg: '#F1F5F9', text: '#475569', label: 'Pending' },
+}
 
 export default function UserDashboardPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const toast = useToast()
+  const user = JSON.parse(localStorage.getItem('taxly_user') || '{}')
+  const userId = user.email || 'demo@taxly.in'
   const [sessions, setSessions] = useState([])
-  const [activeSession, setActiveSession] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-
-  const userId = localStorage.getItem('taxly_user_id')
+  const [starting, setStarting] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('taxly_token')
-    if (!token || !userId) {
+    if (!localStorage.getItem('taxly_token')) {
       navigate('/login')
       return
     }
-    fetchData()
+    getSessions(userId)
+      .then(res => setSessions(res.data || []))
+      .catch(() => setSessions([]))
+      .finally(() => setLoading(false))
   }, [userId, navigate])
 
-  const fetchData = async () => {
+  async function startNewSession() {
+    setStarting(true)
     try {
-      setLoading(true)
-      setError(false)
-      const res = await getSessions(userId)
-      const data = res.data || []
-      setSessions(data)
-      
-      const paramSessionId = searchParams.get('session_id')
-      if (paramSessionId) {
-        const sessRes = await getSession(paramSessionId)
-        setActiveSession(sessRes.data)
-      } else if (data.length > 0) {
-        const sessRes = await getSession(data[0].id)
-        setActiveSession(sessRes.data)
-      }
-    } catch (err) {
-      console.error(err)
-      setError(true)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleStartFiling = async () => {
-    try {
-      setLoading(true)
       const res = await createSession(userId)
       navigate(`/chat/${res.data.session_id}`)
-    } catch (err) {
-      alert("Couldn't create session")
-      setLoading(false)
+    } catch {
+      toast.error('Could not start a new session. Please try again.')
+      setStarting(false)
     }
   }
 
-  const handleDownloadXml = async (sessionId) => {
+  function handleLogout() {
+    localStorage.removeItem('taxly_token')
+    localStorage.removeItem('taxly_user')
+    navigate('/login')
+  }
+
+  async function handleDownloadXml(sessionId) {
     try {
       const res = await downloadXml(sessionId)
-      const blob = new Blob([res.data.xml], { type: 'text/xml' })
+      const blob = new Blob([res.data], { type: 'application/xml' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `taxly_itr_${sessionId}.xml`
-      document.body.appendChild(a)
+      a.download = `taxly_ITR_${sessionId}.xml`
       a.click()
-      document.body.removeChild(a)
       URL.revokeObjectURL(url)
-    } catch (err) {
-      alert('Failed to download XML. Ensure payment is complete and session is ready.')
+    } catch {
+      toast.error('XML download failed. Please try again or contact support.')
     }
   }
 
-  const handlePay = (sessionId) => {
-    // Mock payment trigger, typically would call the backend /pay endpoint
-    alert("Payment portal opening... (Mock)")
-  }
-
-  const getProgressStep = (session) => {
-    if (!session) return 0
-    if (session.ca_approved) return 5
-    if (session.status === 'complete') return 4
-    const msgCount = (session.messages || []).length
-    if (msgCount > 10) return 3
-    if (msgCount > 6) return 2
-    if (msgCount > 2) return 1
-    return 0
-  }
-
-  if (loading && !activeSession && sessions.length === 0) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ color: '#64748b', fontSize: '16px', fontWeight: 500 }}>Loading dashboard...</div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ padding: '20px', background: '#fef2f2', borderBottom: '1px solid #fecaca', color: '#dc2626', textAlign: 'center', fontWeight: 500 }}>
-          Couldn't load your data. Please refresh.
-        </div>
-      </div>
-    )
-  }
-
-  if (sessions.length === 0) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        {/* Top Navbar */}
-        <div style={{ width: '100%', padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="Taxly Logo" style={{ height: '48px' }} />
-            <div style={{ marginLeft: '12px', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '4px 8px', background: '#f1f5f9', borderRadius: '6px' }}>User Portal</div>
-          </div>
-        </div>
-        
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-          <div style={{ background: '#ffffff', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0', textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-            <h2 style={{ margin: '0 0 16px 0', color: '#0f172a', fontSize: '20px' }}>No Filings Yet</h2>
-            <p style={{ margin: '0 0 24px 0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>You haven't started any tax filings. Click below to begin your chat-based ITR filing process.</p>
-            <button onClick={handleStartFiling} style={{ background: '#1e3a5f', color: '#ffffff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer', width: '100%' }}>Start your first filing</button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const stepNames = ['Salary', 'Deductions', 'HRA', 'Capital Gains', 'CA Review']
-  const currentStep = getProgressStep(activeSession)
-  
-  const incData = activeSession?.income_data || {}
-  const hasCalculatedData = !!incData.gross_salary
-  
-  const renderStatusPill = (status, caApproved) => {
-    let text = 'In Progress'
-    let bg = '#fef3c7'
-    let color = '#d97706'
-    
-    if (caApproved) {
-      text = 'Approved'
-      bg = '#dcfce7'
-      color = '#16a34a'
-    } else if (status === 'complete') {
-      text = 'CA Review'
-      bg = '#e0f2fe'
-      color = '#0284c7'
-    }
-    
-    return <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, background: bg, color: color }}>{text}</span>
-  }
+  const completedSessions = sessions.filter(s => s.status === 'complete')
+  const pendingSessions = sessions.filter(s => s.status !== 'complete')
+  const currentSession = pendingSessions[0]
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* Top Navbar */}
-      <div style={{ width: '100%', padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo.png" alt="Taxly Logo" style={{ height: '48px' }} />
-          <div style={{ marginLeft: '12px', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', padding: '4px 8px', background: '#f1f5f9', borderRadius: '6px' }}>User Portal</div>
-        </div>
-        <div>
-          <button style={{ background: 'transparent', border: '1px solid #cbd5e1', padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: '#475569', cursor: 'pointer' }} onClick={() => { localStorage.removeItem('taxly_token'); localStorage.removeItem('taxly_user_id'); navigate('/'); }}>Log Out</button>
-        </div>
-      </div>
+    <div className="dash-root">
+      <Navbar />
 
-      <div style={{ flex: 1, padding: '40px', maxWidth: '1200px', margin: '0 auto', width: '100%', display: 'flex', gap: '32px', flexDirection: 'column' }}>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div className="dash-content">
+        {/* Welcome */}
+        <div className="dash-welcome">
           <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#0f172a', margin: '0 0 8px 0' }}>Dashboard</h1>
-            <p style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>Track your tax filing progress and history.</p>
+            <h1 className="dash-welcome-title">
+              Welcome back{user.name ? `, ${user.name.split(' ')[0]}` : ''}! 👋
+            </h1>
+            <p className="dash-welcome-sub">AY 2025–26 filing deadline: 31 July 2025</p>
           </div>
-          <button onClick={handleStartFiling} style={{ background: '#1e3a5f', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>+ New Filing</button>
+          <button className="dash-logout" onClick={handleLogout}>Log out</button>
         </div>
 
-        {/* Active Session Overview */}
-        {activeSession && (
-          <div style={{ background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0', padding: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div>
-                <h3 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '18px' }}>Active Filing (AY {activeSession.created_at ? new Date(activeSession.created_at).getFullYear() + 1 : '2025'}-{activeSession.created_at ? (new Date(activeSession.created_at).getFullYear() + 2).toString().slice(2) : '26'})</h3>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  {renderStatusPill(activeSession.status, activeSession.ca_approved)}
-                  {activeSession.payment_status === 'paid' ? (
-                    <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: 500 }}>Payment Complete</span>
-                  ) : (
-                    <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: 500 }}>Payment Pending</span>
-                  )}
-                </div>
+        {/* Current filing card */}
+        <div className="dash-section-label">Current Filing</div>
+        {loading ? (
+          <div className="dash-skeleton" />
+        ) : currentSession ? (
+          <div className="dash-current-card">
+            <div className="dash-current-left">
+              <div className="dash-current-ay">{AY_LABEL['2526']}</div>
+              <div className="dash-current-status">
+                <span className="dash-status-pill" style={{
+                  background: STATUS_COLOR[currentSession.status]?.bg,
+                  color: STATUS_COLOR[currentSession.status]?.text
+                }}>
+                  {STATUS_COLOR[currentSession.status]?.label || currentSession.status}
+                </span>
               </div>
-              <div>
-                {activeSession.payment_status === 'paid' ? (
-                  <button onClick={() => handleDownloadXml(activeSession.id)} disabled={!activeSession.ca_approved} style={{ background: activeSession.ca_approved ? '#16a34a' : '#94a3b8', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: activeSession.ca_approved ? 'pointer' : 'not-allowed' }}>Download XML</button>
-                ) : (
-                  <button onClick={() => handlePay(activeSession.id)} style={{ background: '#2563eb', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>Pay ₹499</button>
-                )}
-              </div>
+              <p className="dash-current-info">
+                Last updated {new Date(currentSession.updated_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
             </div>
-
-            {/* Progress Bar */}
-            <div style={{ marginBottom: '40px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                {stepNames.map((name, i) => (
-                  <div key={name} style={{ fontSize: '12px', fontWeight: 500, color: i < currentStep ? '#1e3a5f' : (i === currentStep ? '#0f172a' : '#cbd5e1') }}>{name}</div>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {stepNames.map((_, i) => (
-                  <div key={i} style={{ height: '6px', flex: 1, borderRadius: '3px', background: i < currentStep ? '#1e3a5f' : (i === currentStep ? '#93c5fd' : '#e2e8f0') }} />
-                ))}
-              </div>
-            </div>
-
-            {/* Tax Breakdown */}
-            {!hasCalculatedData ? (
-              <div style={{ padding: '40px', background: '#f8fafc', borderRadius: '8px', textAlign: 'center', border: '1px dashed #cbd5e1' }}>
-                <div style={{ color: '#64748b', fontSize: '14px', fontWeight: 500 }}>Calculating... Continue chat to see your tax breakdown.</div>
-                <button onClick={() => navigate(`/chat/${activeSession.id}`)} style={{ marginTop: '16px', background: '#ffffff', border: '1px solid #cbd5e1', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: '#0f172a', cursor: 'pointer' }}>Resume Chat</button>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Income Summary</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}><span style={{ color: '#64748b' }}>Gross Salary</span><span style={{ fontWeight: 500, color: '#0f172a' }}>₹{incData.gross_salary?.toLocaleString()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}><span style={{ color: '#64748b' }}>Standard Deduction</span><span style={{ fontWeight: 500, color: '#0f172a' }}>-₹{incData.standard_deduction?.toLocaleString()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}><span style={{ color: '#64748b' }}>HRA Exemption</span><span style={{ fontWeight: 500, color: '#0f172a' }}>-₹{incData.hra_exemption?.toLocaleString()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}><span style={{ color: '#64748b' }}>80C Deductions</span><span style={{ fontWeight: 500, color: '#0f172a' }}>-₹{incData.deduction_80c?.toLocaleString()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}><span style={{ color: '#0f172a', fontWeight: 600 }}>Net Taxable Income</span><span style={{ fontWeight: 600, color: '#0f172a' }}>₹{incData.net_taxable_income?.toLocaleString()}</span></div>
-                  </div>
-                </div>
-                <div>
-                  <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tax Calculation</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}><span style={{ color: '#64748b' }}>Total Tax Payable</span><span style={{ fontWeight: 500, color: '#0f172a' }}>₹{incData.tax_payable?.toLocaleString()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}><span style={{ color: '#64748b' }}>TDS Paid</span><span style={{ fontWeight: 500, color: '#0f172a' }}>-₹{incData.tds_paid?.toLocaleString()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
-                      <span style={{ color: '#0f172a', fontWeight: 600 }}>{incData.refund_due < 0 ? 'Tax Owed' : 'Refund Due'}</span>
-                      <span style={{ fontWeight: 600, color: incData.refund_due < 0 ? '#dc2626' : '#16a34a' }}>₹{Math.abs(incData.refund_due || 0).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Regime Comparison */}
-            {incData.old_regime_tax !== undefined && incData.new_regime_tax !== undefined && (
-              <div style={{ marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #e2e8f0' }}>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Regime Comparison</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div style={{ padding: '20px', borderRadius: '8px', border: incData.recommended_regime === 'old' ? '2px solid #10b981' : '1px solid #e2e8f0', position: 'relative' }}>
-                    {incData.recommended_regime === 'old' && <div style={{ position: 'absolute', top: '-10px', right: '16px', background: '#10b981', color: '#ffffff', fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px' }}>RECOMMENDED</div>}
-                    <div style={{ color: '#64748b', fontSize: '13px', marginBottom: '4px' }}>Old Regime Tax</div>
-                    <div style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a' }}>₹{incData.old_regime_tax.toLocaleString()}</div>
-                  </div>
-                  <div style={{ padding: '20px', borderRadius: '8px', border: incData.recommended_regime === 'new' ? '2px solid #10b981' : '1px solid #e2e8f0', position: 'relative' }}>
-                    {incData.recommended_regime === 'new' && <div style={{ position: 'absolute', top: '-10px', right: '16px', background: '#10b981', color: '#ffffff', fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px' }}>RECOMMENDED</div>}
-                    <div style={{ color: '#64748b', fontSize: '13px', marginBottom: '4px' }}>New Regime Tax</div>
-                    <div style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a' }}>₹{incData.new_regime_tax.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <button
+              className="dash-continue-btn"
+              onClick={() => navigate(`/chat/${currentSession.session_id}`)}
+            >
+              Continue filing →
+            </button>
+          </div>
+        ) : (
+          <div className="dash-empty-card">
+            <div className="dash-empty-icon">📋</div>
+            <h2>Start your first filing</h2>
+            <p>Taxly will guide you through a quick 20-minute conversation — no forms, no jargon.</p>
+            <button className="dash-start-btn" onClick={startNewSession} disabled={starting}>
+              {starting ? 'Starting…' : 'Start ITR Filing'}
+            </button>
           </div>
         )}
 
-        {/* History & Documents */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>Filing History</h3>
-            </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 24px', fontWeight: 600, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>AY</th>
-                  <th style={{ padding: '12px 24px', fontWeight: 600, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Type</th>
-                  <th style={{ padding: '12px 24px', fontWeight: 600, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Status</th>
-                  <th style={{ padding: '12px 24px', fontWeight: 600, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.map(s => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: 500 }}>{s.created_at ? new Date(s.created_at).getFullYear() + 1 + '-' + (new Date(s.created_at).getFullYear() + 2).toString().slice(2) : '2025-26'}</td>
-                    <td style={{ padding: '16px 24px', color: '#64748b' }}>{s.income_data?.itr_type || 'ITR-1'}</td>
-                    <td style={{ padding: '16px 24px' }}>{renderStatusPill(s.status, s.ca_approved)}</td>
-                    <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                      <button onClick={() => s.payment_status === 'paid' ? handleDownloadXml(s.id) : setActiveSession(s)} disabled={s.payment_status === 'paid' && !s.ca_approved} style={{ background: 'transparent', border: 'none', color: (s.payment_status === 'paid' && s.ca_approved) ? '#2563eb' : '#94a3b8', fontSize: '13px', fontWeight: 500, cursor: (s.payment_status === 'paid' && s.ca_approved) || s.payment_status !== 'paid' ? 'pointer' : 'not-allowed', textDecoration: 'underline' }}>
-                        {s.payment_status === 'paid' ? 'Download XML' : 'View / Pay'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {currentSession && (
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+            <button className="dash-new-btn" onClick={startNewSession} disabled={starting}>
+              {starting ? '…' : '+ Start new filing'}
+            </button>
           </div>
+        )}
 
-          <div style={{ background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>Documents</h3>
+        {/* Filing history */}
+        {completedSessions.length > 0 && (
+          <>
+            <div className="dash-section-label" style={{ marginTop: 32 }}>Filing History</div>
+            <div className="dash-table-wrap">
+              <table className="dash-table">
+                <thead>
+                  <tr>
+                    <th>Assessment Year</th>
+                    <th>Status</th>
+                    <th>Tax Payable / Refund</th>
+                    <th>Filed On</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {completedSessions.map(s => (
+                    <tr key={s.session_id}>
+                      <td>{AY_LABEL['2526'] || 'AY 2025–26'}</td>
+                      <td>
+                        <span className="dash-status-pill" style={{
+                          background: STATUS_COLOR.complete.bg,
+                          color: STATUS_COLOR.complete.text
+                        }}>
+                          Filed
+                        </span>
+                      </td>
+                      <td className="dash-amount">
+                        {s.tax_amount > 0
+                          ? <span className="dash-payable">Pay ₹{s.tax_amount?.toLocaleString('en-IN')}</span>
+                          : <span className="dash-refund">Refund ₹{Math.abs(s.tax_amount || 0).toLocaleString('en-IN')}</span>
+                        }
+                      </td>
+                      <td>{new Date(s.updated_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                      <td>
+                        <button
+                          className="dash-xml-btn"
+                          onClick={() => handleDownloadXml(s.session_id)}
+                        >
+                          ⬇ XML
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div style={{ padding: '20px 24px' }}>
-              {sessions.map(s => {
-                const files = s.income_data?.form16_files || []
-                return files.map((file, idx) => (
-                  <div key={`${s.id}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', fontSize: '14px', color: '#475569' }}>
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1e3a5f' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                    <span>{file}</span>
-                  </div>
-                ))
-              })}
-              {sessions.filter(s => s.payment_status === 'paid' && s.ca_approved).map(s => (
-                <div key={`xml-${s.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', fontSize: '14px', color: '#475569' }}>
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#10b981' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                  <span>ITR XML (AY {s.created_at ? new Date(s.created_at).getFullYear() + 1 : '2025'}-{s.created_at ? (new Date(s.created_at).getFullYear() + 2).toString().slice(2) : '26'})</span>
-                </div>
-              ))}
-              {sessions.length === 0 || (!sessions.some(s => s.income_data?.form16_files) && !sessions.some(s => s.payment_status === 'paid')) ? (
-                <div style={{ color: '#94a3b8', fontSize: '14px' }}>No documents uploaded yet.</div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-        
+          </>
+        )}
+
+        {/* Empty state if no sessions at all */}
+        {!loading && sessions.length === 0 && (
+          <></>
+        )}
       </div>
+
+      <style>{dashStyles}</style>
     </div>
   )
 }
+
+const dashStyles = `
+  .dash-root {
+    min-height: 100vh;
+    background: #F7F6F2;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .dash-content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 20px 80px;
+  }
+  .dash-welcome {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .dash-welcome-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+  .dash-welcome-sub { font-size: 14px; color: #64748b; }
+  .dash-logout {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 9px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dash-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+  .dash-skeleton {
+    height: 140px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    animation: shimmer 1.4s ease infinite;
+    background-size: 200% 100%;
+    background-image: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  .dash-current-card {
+    background: linear-gradient(135deg, #0D7A5F 0%, #0b6a50 100%);
+    border-radius: 20px;
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-shadow: 0 8px 30px rgba(13,122,95,0.2);
+  }
+  .dash-current-ay { font-size: 15px; color: rgba(255,255,255,0.75); margin-bottom: 6px; font-weight: 600; }
+  .dash-current-status { margin-bottom: 6px; }
+  .dash-current-info { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .dash-status-pill {
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  .dash-continue-btn {
+    background: #fff;
+    color: #0D7A5F;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.12s;
+  }
+  .dash-continue-btn:hover { transform: scale(1.03); }
+
+  .dash-empty-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 48px 32px;
+    text-align: center;
+    border: 2px dashed #e2e8f0;
+  }
+  .dash-empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .dash-empty-card h2 { font-size: 22px; color: #0f172a; font-weight: 800; margin-bottom: 8px; }
+  .dash-empty-card p { font-size: 15px; color: #64748b; margin-bottom: 24px; line-height: 1.6; max-width: 380px; margin-inline: auto; }
+  .dash-start-btn {
+    background: linear-gradient(135deg, #0D7A5F, #0b6a50);
+    color: #fff; border: none;
+    padding: 16px 36px; border-radius: 14px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(13,122,95,0.25);
+    transition: opacity 0.15s;
+  }
+  .dash-start-btn:hover { opacity: 0.9; }
+  .dash-start-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .dash-new-btn {
+    background: transparent;
+    border: 1.5px solid #0D7A5F;
+    color: #0D7A5F;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .dash-table-wrap {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .dash-table th {
+    background: #F8FAFC;
+    padding: 12px 18px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .dash-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #F1F5F9;
+    color: #334155;
+  }
+  .dash-table tr:last-child td { border-bottom: none; }
+  .dash-payable { color: #DC2626; font-weight: 600; }
+  .dash-refund { color: #16a34a; font-weight: 600; }
+  .dash-xml-btn {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .dash-xml-btn:hover { background: #DBEAFE; }
+`
