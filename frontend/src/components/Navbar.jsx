@@ -7,6 +7,14 @@ export default function Navbar({ activeSessionId = null }) {
   const location = useLocation()
   const toast = useToast()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [theme, setTheme] = useState(() => localStorage.getItem('taxly_theme') || 'light')
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('taxly_theme', nextTheme)
+    document.documentElement.setAttribute('data-theme', nextTheme)
+  }
 
   const token = localStorage.getItem('taxly_token')
   let userEmail = 'user@taxly.in'
@@ -30,7 +38,12 @@ export default function Navbar({ activeSessionId = null }) {
     <header className="app-navbar">
       <div className="navbar-container">
         <Link to="/dashboard" className="navbar-brand">
-          <img src="/logo-color.png" alt="Taxly" className="navbar-logo" onError={(e) => { e.target.src = '/logo.png' }} />
+          <img
+            src={theme === 'dark' ? '/logo-white.png' : '/logo-color.png'}
+            alt="Taxly"
+            className="navbar-logo"
+            onError={(e) => { e.target.src = '/logo.png' }}
+          />
         </Link>
 
         <nav className="navbar-links">
@@ -46,6 +59,23 @@ export default function Navbar({ activeSessionId = null }) {
         </nav>
 
         <div className="navbar-right">
+          <button
+            className="nav-theme-btn"
+            onClick={toggleTheme}
+            aria-label="Toggle dark/light mode"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+          >
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+              </svg>
+            )}
+          </button>
           {activeSessionId && (
             <button className="btn-resume-filing" onClick={() => navigate(`/chat/${activeSessionId}`)}>
               Continue Filing →
@@ -83,17 +113,27 @@ export default function Navbar({ activeSessionId = null }) {
 
       <style>{`
         .app-navbar {
-          background: #fff;
-          border-bottom: 1px solid var(--paper-3, #E5E2D9);
+          background: rgba(255, 255, 255, 0.88);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid var(--paper-3, #E5E2D9);
+          border-radius: 100px;
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
           position: sticky;
-          top: 0;
+          top: 14px;
           z-index: 100;
+          max-width: 1200px;
+          margin: 14px auto 0 auto;
           font-family: var(--sans, 'DM Sans', sans-serif);
+          transition: all 0.3s ease;
+        }
+        :root[data-theme="dark"] .app-navbar {
+          background: rgba(14, 20, 28, 0.82);
+          border-color: rgba(255, 255, 255, 0.1);
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
         }
         .navbar-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 12px 24px;
+          padding: 8px 20px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -114,6 +154,20 @@ export default function Navbar({ activeSessionId = null }) {
         .nav-item.active { color: var(--blue, #1B4FD8); font-weight: 600; background: var(--blue-light, #EEF2FF); }
         
         .navbar-right { display: flex; align-items: center; gap: 16px; position: relative; }
+        .nav-theme-btn {
+          background: var(--paper-2, #EFEDE7);
+          border: 1px solid var(--paper-3, #E5E2D9);
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--ink, #0D1117);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .nav-theme-btn:hover { border-color: var(--ink-3); transform: scale(1.05); }
         .btn-resume-filing {
           background: var(--green, #0D7A5F);
           color: #fff;

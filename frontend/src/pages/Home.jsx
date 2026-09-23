@@ -8,6 +8,13 @@ export default function Home() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
+  const [theme, setTheme] = useState(() => localStorage.getItem('taxly_theme') || 'dark')
+
+  const toggleTheme = useCallback(() => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('taxly_theme', nextTheme)
+  }, [theme])
 
   // ── Session start / Start filing ─────────────────────────────────────────────
   const startFiling = useCallback(async (e) => {
@@ -37,14 +44,15 @@ export default function Home() {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  // ── Background color sync ──────────────────────────────────────────────────
+  // ── Background color sync & Theme application ─────────────────────────────
   useEffect(() => {
     const prevBg = document.body.style.backgroundColor
-    document.body.style.backgroundColor = '#0A0E14'
+    document.documentElement.setAttribute('data-theme', theme)
+    document.body.style.backgroundColor = theme === 'dark' ? '#0A0E14' : '#F8FAF6'
     return () => {
       document.body.style.backgroundColor = prevBg
     }
-  }, [])
+  }, [theme])
 
   // ── 1. Reveal on scroll ────────────────────────────────────────────────────
   useEffect(() => {
@@ -380,7 +388,7 @@ export default function Home() {
   const openCount = initialFlags.length - resolvedCount
 
   return (
-    <div className="home-page">
+    <div className={`home-page theme-${theme}`} data-theme={theme}>
       {/* ══ ANNOUNCE ══ */}
       <div className="announce">
         <b>Filing season is open for AY 2025–26.</b>
@@ -390,9 +398,13 @@ export default function Home() {
       {/* ══ NAV ══ */}
       <nav>
         <div className="nav-in">
-          <Link to="/" className="brand">
-            <span className="brand-mark">T</span>
-            Taxly
+          <Link to="/" className="brand" aria-label="Taxly Home">
+            <img
+              src={theme === 'light' ? '/logo-color.png' : '/logo-white.png'}
+              alt="Taxly Logo"
+              className="brand-logo-img"
+              onError={(e) => { e.target.src = '/logo.png' }}
+            />
           </Link>
           <ul className="nav-links">
             <li><a href="#how">How it works</a></li>
@@ -402,9 +414,26 @@ export default function Home() {
             <li><a href="#engine">Tax engine</a></li>
           </ul>
           <div className="nav-right">
+            <button
+              className="theme-toggle"
+              onClick={toggleTheme}
+              aria-label="Toggle light and dark mode"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+            >
+              {theme === 'dark' ? (
+                <svg className="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+              ) : (
+                <svg className="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+                </svg>
+              )}
+            </button>
             <Link to="/login" className="btn btn-ghost">Sign in</Link>
             <button onClick={startFiling} className="btn btn-fill" disabled={loading}>
-              {loading ? 'Starting...' : 'Start filing'}
+              {loading ? 'Starting...' : 'Start filing →'}
             </button>
           </div>
         </div>
