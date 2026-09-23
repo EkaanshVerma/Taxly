@@ -367,7 +367,7 @@
 /* FOOTER */
 .landing-footer { background: var(--navy-deep); color: #fff; padding: 80px 20px; }
 .footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 60px; }
-.footer-logo { height: 60px; margin-bottom: 16px; }
+.footer-logo { height: 96px; object-fit: contain; margin-bottom: 16px; display: block; }
 .footer-col p { font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.6; }
 .footer-col h4 { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #fff; }
 .footer-col ul { list-style: none; padding: 0; margin: 0; }

@@ -1449,9 +1449,13 @@ export default function Home() {
         <div className="wrap">
           <div className="f-grid">
             <div className="f-brand">
-              <Link to="/" className="brand">
-                <span className="brand-mark">T</span>
-                Taxly
+              <Link to="/" aria-label="Taxly Home">
+                <img
+                  src={theme === 'light' ? '/logo-color.png' : '/logo-white.png'}
+                  alt="Taxly Logo"
+                  className="footer-logo-img"
+                  onError={(e) => { e.target.src = '/logo.png' }}
+                />
               </Link>
               <p>Conversational ITR filing for India, with a chartered accountant on every verdict that matters.</p>
             </div>

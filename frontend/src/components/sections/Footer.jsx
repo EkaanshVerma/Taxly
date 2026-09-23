@@ -53,7 +53,7 @@ export default function Footer() {
         .site-footer { background: #0B1A33; color: #fff; padding: 80px 24px 40px; }
         .sf-container { max-width: 1140px; margin: 0 auto; }
         .sf-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
-        .sf-logo { height: 56px; margin-bottom: 16px; }
+        .sf-logo { height: 96px; object-fit: contain; margin-bottom: 16px; display: block; }
         .sf-brand p { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6; }
         .sf-col h4 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; color: rgba(255,255,255,0.9); }
         .sf-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
