@@ -34,3 +34,9 @@ export const sendOtp = (email) =>
 
 export const verifyOtp = (email, otp) =>
   axios.post(`${BASE}/auth/verify-otp`, { email, otp })
+
+export const sendPhoneOtp = (phone) =>
+  axios.post(`${BASE}/auth/send-otp`, { phone })
+
+export const verifyPhoneOtp = (phone, otp) =>
+  axios.post(`${BASE}/auth/verify-otp`, { phone, otp })
