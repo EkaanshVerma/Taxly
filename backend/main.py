@@ -57,11 +57,14 @@ class GenerateXmlRequest(BaseModel):
     taxpayer: Dict[str, Any]
 
 class SendOtpRequest(BaseModel):
-    email: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
 
 class VerifyOtpRequest(BaseModel):
-    email: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
     otp: str
+
 
 class CARegisterRequest(BaseModel):
     name: str
