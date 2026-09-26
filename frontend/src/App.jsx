@@ -5,7 +5,7 @@ import { ToastProvider } from './components/ToastContext'
 // Core app pages
 import Home from './pages/Home'
 import LoginPage from './pages/LoginPage'
-import UserDashboardPage from './pages/UserDashboardPage'
+import Dashboard from './pages/Dashboard'
 import ChatPage from './pages/ChatPage'
 import SummaryPage from './pages/SummaryPage'
 import ProfilePage from './pages/ProfilePage'
@@ -88,7 +88,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* ── User (auth-gated) ── */}
-          <Route path="/dashboard" element={<RequireAuth><UserDashboardPage /></RequireAuth>} />
+          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/chat/:sessionId" element={<RequireAuth><ChatPage /></RequireAuth>} />
           <Route path="/summary/:sessionId" element={<RequireAuth><SummaryPage /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />

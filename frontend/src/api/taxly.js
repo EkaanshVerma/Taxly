@@ -27,7 +27,7 @@ export const getSessions = (userId) =>
   axios.get(`${BASE}/sessions`, { params: { user_id: userId } })
 
 export const downloadXml = (sessionId) =>
-  axios.get(`${BASE}/sessions/${sessionId}/download-xml`)
+  axios.get(`${BASE}/sessions/${sessionId}/download-xml`, { responseType: 'blob' })
 
 export const sendOtp = (email) =>
   axios.post(`${BASE}/auth/send-otp`, { email })
