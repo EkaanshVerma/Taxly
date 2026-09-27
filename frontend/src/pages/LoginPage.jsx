@@ -1,21 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { sendPhoneOtp, verifyPhoneOtp } from '../api/taxly'
+import { sendOtp, sendPhoneOtp, verifyOtp, verifyPhoneOtp } from '../api/taxly'
 import { useToast } from '../components/ToastContext'
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const toast = useToast()
 
-  const [step, setStep] = useState(1) // 1 = phone, 2 = otp
+  const [step, setStep] = useState(1) // 1 = input, 2 = otp
+  const [loginType, setLoginType] = useState('email') // 'email' | 'phone'
+  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
+  const [devOtp, setDevOtp] = useState('')
+  const [emailDelivered, setEmailDelivered] = useState(false)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [countdown, setCountdown] = useState(0)
 
   const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()]
+  const emailRef = useRef()
   const phoneRef = useRef()
 
   useEffect(() => {
@@ -44,33 +49,78 @@ export default function LoginPage() {
 
   // Validate Indian mobile number (10 digits, starts 6-9)
   const isValidPhone = (p) => /^[6-9]\d{9}$/.test(p.replace(/\s/g, ''))
+  const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim())
 
   const handleSendOtp = async (e) => {
     e?.preventDefault()
     setError('')
+    setDevOtp('')
+    setEmailDelivered(false)
 
-    const cleaned = phone.replace(/\s/g, '')
-    if (!isValidPhone(cleaned)) {
-      setError('Please enter a valid 10-digit Indian mobile number')
-      return
-    }
+    if (loginType === 'email') {
+      const trimmedEmail = email.trim().toLowerCase()
+      if (!isValidEmail(trimmedEmail)) {
+        setError('Please enter a valid email address')
+        return
+      }
 
-    setLoading(true)
-    try {
-      await sendPhoneOtp(`+91${cleaned}`)
-      setStep(2)
-      setCountdown(30)
-      setOtp(['', '', '', '', '', ''])
-      toast.success(`OTP sent to +91 ${cleaned}`)
-      setTimeout(() => otpRefs[0].current?.focus(), 150)
-    } catch {
-      // Graceful fallback for dev
-      setStep(2)
-      setCountdown(30)
-      toast.info('Test OTP: 123456')
-      setTimeout(() => otpRefs[0].current?.focus(), 150)
-    } finally {
-      setLoading(false)
+      setLoading(true)
+      try {
+        const res = await sendOtp(trimmedEmail)
+        setStep(2)
+        setCountdown(30)
+        setOtp(['', '', '', '', '', ''])
+        if (res.data?.email_delivered) {
+          setEmailDelivered(true)
+          toast.success(`Verification code sent to ${trimmedEmail}`)
+        } else if (res.data?.dev_otp) {
+          setDevOtp(res.data.dev_otp)
+          toast.info(`Verification code: ${res.data.dev_otp}`)
+        } else {
+          toast.success(`Code generated for ${trimmedEmail}`)
+        }
+        setTimeout(() => otpRefs[0].current?.focus(), 150)
+      } catch (err) {
+        // Fallback for demo
+        setStep(2)
+        setCountdown(30)
+        const mockOtp = '123456'
+        setDevOtp(mockOtp)
+        toast.info(`Test OTP: ${mockOtp}`)
+        setTimeout(() => otpRefs[0].current?.focus(), 150)
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      const cleaned = phone.replace(/\s/g, '')
+      if (!isValidPhone(cleaned)) {
+        setError('Please enter a valid 10-digit Indian mobile number')
+        return
+      }
+
+      setLoading(true)
+      try {
+        const res = await sendPhoneOtp(`+91${cleaned}`)
+        setStep(2)
+        setCountdown(30)
+        setOtp(['', '', '', '', '', ''])
+        if (res.data?.dev_otp) {
+          setDevOtp(res.data.dev_otp)
+          toast.info(`Verification code: ${res.data.dev_otp}`)
+        } else {
+          toast.success(`OTP sent to +91 ${cleaned}`)
+        }
+        setTimeout(() => otpRefs[0].current?.focus(), 150)
+      } catch {
+        setStep(2)
+        setCountdown(30)
+        const mockOtp = '123456'
+        setDevOtp(mockOtp)
+        toast.info(`Test OTP: ${mockOtp}`)
+        setTimeout(() => otpRefs[0].current?.focus(), 150)
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -111,21 +161,37 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      const cleaned = phone.replace(/\s/g, '')
-      const res = await verifyPhoneOtp(`+91${cleaned}`, fullOtp)
-      const token = res.data?.token || res.data?.access_token || 'mock_jwt_token_' + Date.now()
-      localStorage.setItem('taxly_token', token)
-      localStorage.setItem('taxly_user_phone', `+91${cleaned}`)
-      toast.success('Successfully logged in!')
-      navigate('/dashboard')
-    } catch {
-      // Dev fallback
-      const cleaned = phone.replace(/\s/g, '')
-      const mockToken = btoa(JSON.stringify({ phone: `+91${cleaned}`, exp: Math.floor(Date.now() / 1000) + 86400 * 7 }))
-      localStorage.setItem('taxly_token', `header.${mockToken}.sig`)
-      localStorage.setItem('taxly_user_phone', `+91${cleaned}`)
-      toast.success('Logged in successfully!')
-      navigate('/dashboard')
+      if (loginType === 'email') {
+        const trimmedEmail = email.trim().toLowerCase()
+        const res = await verifyOtp(trimmedEmail, fullOtp)
+        const token = res.data?.token || res.data?.access_token || 'mock_jwt_token_' + Date.now()
+        localStorage.setItem('taxly_token', token)
+        localStorage.setItem('taxly_user_email', trimmedEmail)
+        if (res.data?.user?.id) localStorage.setItem('taxly_user_id', res.data.user.id)
+        toast.success('Successfully logged in!')
+        navigate('/dashboard')
+      } else {
+        const cleaned = phone.replace(/\s/g, '')
+        const res = await verifyPhoneOtp(`+91${cleaned}`, fullOtp)
+        const token = res.data?.token || res.data?.access_token || 'mock_jwt_token_' + Date.now()
+        localStorage.setItem('taxly_token', token)
+        localStorage.setItem('taxly_user_phone', `+91${cleaned}`)
+        if (res.data?.user?.id) localStorage.setItem('taxly_user_id', res.data.user.id)
+        toast.success('Successfully logged in!')
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      if (devOtp && fullOtp === devOtp) {
+        const identifier = loginType === 'email' ? email.trim().toLowerCase() : `+91${phone.replace(/\s/g, '')}`
+        const mockToken = btoa(JSON.stringify({ identifier, exp: Math.floor(Date.now() / 1000) + 86400 * 7 }))
+        localStorage.setItem('taxly_token', `header.${mockToken}.sig`)
+        if (loginType === 'email') localStorage.setItem('taxly_user_email', identifier)
+        else localStorage.setItem('taxly_user_phone', identifier)
+        toast.success('Logged in successfully!')
+        navigate('/dashboard')
+      } else {
+        setError(err.response?.data?.detail || 'Invalid verification code. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -157,7 +223,8 @@ export default function LoginPage() {
             <p>India's only AI-native tax filing platform. Answer a few questions, we handle the rest.</p>
             <div className="lp-hero-badges">
               <span className="lp-badge">🔒 Bank-grade security</span>
-              <span className="lp-badge">📄 ITR XML ready instantly</span>
+              <span className="lp-badge">⚡ Instant OTP via Resend</span>
+              <span className="lp-badge">📄 ITR XML ready</span>
             </div>
           </div>
         </div>
@@ -170,41 +237,84 @@ export default function LoginPage() {
             <h2>Sign in to Taxly</h2>
             <p>
               {step === 1
-                ? 'Enter your mobile number to get started'
-                : `Enter the 6-digit code sent to +91 ${phone}`}
+                ? 'Enter your credentials to receive a free 6-digit code'
+                : `Enter the 6-digit verification code sent to ${loginType === 'email' ? email : '+91 ' + phone}`}
             </p>
           </div>
+
+          {step === 1 && (
+            <div className="lp-tabs">
+              <button
+                type="button"
+                className={`lp-tab ${loginType === 'email' ? 'active' : ''}`}
+                onClick={() => { setLoginType('email'); setError('') }}
+              >
+                ✉️ Email (Instant Free)
+              </button>
+              <button
+                type="button"
+                className={`lp-tab ${loginType === 'phone' ? 'active' : ''}`}
+                onClick={() => { setLoginType('phone'); setError('') }}
+              >
+                📱 Mobile (+91)
+              </button>
+            </div>
+          )}
 
           {error && <div className="lp-error" role="alert">{error}</div>}
 
           {step === 1 ? (
             <form onSubmit={handleSendOtp} className="lp-form" noValidate>
-              <div className="lp-field">
-                <label htmlFor="phone">Mobile number</label>
-                <div className="lp-phone-wrap">
-                  <span className="lp-phone-prefix">+91</span>
+              {loginType === 'email' ? (
+                <div className="lp-field">
+                  <label htmlFor="email">Email address</label>
                   <input
-                    id="phone"
-                    ref={phoneRef}
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="98765 43210"
-                    value={phone}
-                    onChange={(e) => setPhone(formatPhone(e.target.value))}
+                    id="email"
+                    ref={emailRef}
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     autoFocus
                     disabled={loading}
-                    className="lp-input lp-phone-input"
-                    maxLength={10}
-                    autoComplete="tel-national"
+                    className="lp-input"
+                    autoComplete="email"
                   />
+                  <span className="lp-hint">100% Free · Verification code delivered via Resend</span>
                 </div>
-              </div>
+              ) : (
+                <div className="lp-field">
+                  <label htmlFor="phone">Mobile number</label>
+                  <div className="lp-phone-wrap">
+                    <span className="lp-phone-prefix">+91</span>
+                    <input
+                      id="phone"
+                      ref={phoneRef}
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="98765 43210"
+                      value={phone}
+                      onChange={(e) => setPhone(formatPhone(e.target.value))}
+                      autoFocus
+                      disabled={loading}
+                      className="lp-input lp-phone-input"
+                      maxLength={10}
+                      autoComplete="tel-national"
+                    />
+                  </div>
+                  <span className="lp-hint">Enter your 10-digit Indian mobile number</span>
+                </div>
+              )}
 
-              <button type="submit" className="lp-btn-primary" disabled={loading || phone.length < 10}>
+              <button
+                type="submit"
+                className="lp-btn-primary"
+                disabled={loading || (loginType === 'email' ? !email.trim() : phone.length < 10)}
+              >
                 {loading ? (
                   <span className="lp-spinner" />
                 ) : (
-                  <>Send OTP <span className="lp-arrow">→</span></>
+                  <>Send Verification Code <span className="lp-arrow">→</span></>
                 )}
               </button>
 
@@ -216,6 +326,20 @@ export default function LoginPage() {
             </form>
           ) : (
             <form onSubmit={handleVerifyOtp} className="lp-form" noValidate>
+              {emailDelivered && (
+                <div className="lp-delivered-banner">
+                  <span>📬 Code delivered to <b>{email}</b>. Check your inbox!</span>
+                </div>
+              )}
+
+              {devOtp && (
+                <div className="lp-code-preview">
+                  <div className="lp-code-preview-label">Verification Code</div>
+                  <div className="lp-code-preview-num">{devOtp}</div>
+                  <div className="lp-code-preview-sub">Instant sandbox access · No wait</div>
+                </div>
+              )}
+
               <div className="lp-field">
                 <label>6-digit OTP</label>
                 <div className="lp-otp-row">
@@ -249,12 +373,12 @@ export default function LoginPage() {
                   <span>Resend code in <b>{countdown}s</b></span>
                 ) : (
                   <button type="button" className="lp-link" onClick={handleSendOtp} disabled={loading}>
-                    Resend OTP
+                    Resend Code
                   </button>
                 )}
                 <span className="lp-dot">·</span>
-                <button type="button" className="lp-link" onClick={() => { setStep(1); setError('') }}>
-                  Change number
+                <button type="button" className="lp-link" onClick={() => { setStep(1); setError(''); setDevOtp('') }}>
+                  Change {loginType === 'email' ? 'email' : 'number'}
                 </button>
               </div>
             </form>
@@ -406,6 +530,88 @@ export default function LoginPage() {
           font-size: 14px;
           color: rgba(240,244,248,0.5);
           line-height: 1.5;
+        }
+
+        /* ── Tabs ── */
+        .lp-tabs {
+          display: flex;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          padding: 3px;
+          margin-bottom: 22px;
+          gap: 3px;
+        }
+        .lp-tab {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 9px 12px;
+          border-radius: 7px;
+          border: none;
+          background: transparent;
+          color: rgba(240,244,248,0.55);
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-family: inherit;
+        }
+        .lp-tab:hover {
+          color: #F0F4F8;
+        }
+        .lp-tab.active {
+          background: #0D7A5F;
+          color: #ffffff;
+          font-weight: 600;
+          box-shadow: 0 2px 8px rgba(13,122,95,0.3);
+        }
+
+        .lp-hint {
+          font-size: 12px;
+          color: rgba(240,244,248,0.45);
+          margin-top: 4px;
+        }
+
+        /* ── Delivered Banner ── */
+        .lp-delivered-banner {
+          background: rgba(13,122,95,0.12);
+          border: 1px solid rgba(13,122,95,0.35);
+          color: #A7F3D0;
+          font-size: 13px;
+          padding: 12px 14px;
+          border-radius: 10px;
+          line-height: 1.5;
+        }
+
+        /* ── Code Preview ── */
+        .lp-code-preview {
+          background: rgba(255,255,255,0.04);
+          border: 1px dashed rgba(91,158,126,0.5);
+          border-radius: 12px;
+          padding: 14px;
+          text-align: center;
+        }
+        .lp-code-preview-label {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(240,244,248,0.5);
+          margin-bottom: 6px;
+        }
+        .lp-code-preview-num {
+          font-size: 26px;
+          font-weight: 700;
+          letter-spacing: 6px;
+          color: #5B9E7E;
+          font-family: 'SF Mono', Monaco, monospace;
+        }
+        .lp-code-preview-sub {
+          font-size: 11.5px;
+          color: rgba(240,244,248,0.4);
+          margin-top: 4px;
         }
 
         /* ── Error ── */

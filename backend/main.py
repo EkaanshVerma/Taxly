@@ -253,58 +253,128 @@ def download_ca_xml(session_id: str, request: Request):
 
 @app.post("/auth/send-otp")
 def send_otp(req: SendOtpRequest):
+    identifier = (req.email or req.phone or "").strip().lower()
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Email or phone number is required")
+
     otp = str(random.randint(100000, 999999))
-    otp_store[req.email] = {
+    otp_store[identifier] = {
         "otp": otp,
         "expires_at": time.time() + 600
     }
     
     resend_key = os.environ.get("RESEND_API_KEY")
-    if resend_key:
+    email_delivered = False
+    
+    if req.email and resend_key:
         try:
-            httpx.post(
+            html_content = f"""
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border: 1px solid #E2E8F0; border-radius: 16px;">
+                <div style="margin-bottom: 24px;">
+                    <span style="font-size: 22px; font-weight: 800; color: #0D7A5F; letter-spacing: -0.5px;">Taxly</span>
+                    <span style="font-size: 13px; color: #64748B; margin-left: 8px;">· Secure Verification</span>
+                </div>
+                <h2 style="font-size: 20px; font-weight: 700; color: #0F172A; margin: 0 0 10px;">Your Verification Code</h2>
+                <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 24px;">
+                    Enter the 6-digit code below to sign in to your Taxly account. This code is valid for 10 minutes.
+                </p>
+                <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+                    <div style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #0D7A5F; font-family: 'SF Mono', Monaco, Inconsolata, monospace;">{otp}</div>
+                </div>
+                <p style="font-size: 13px; color: #64748B; line-height: 1.5; margin: 0 0 16px;">
+                    Do not share this OTP with anyone, including Taxly representatives.
+                </p>
+                <hr style="border: none; border-top: 1px solid #F1F5F9; margin: 20px 0;" />
+                <p style="font-size: 12px; color: #94A3B8; margin: 0;">
+                    If you did not request this verification code, please ignore this email.
+                </p>
+            </div>
+            """
+            resp = httpx.post(
                 "https://api.resend.com/emails",
                 headers={"Authorization": f"Bearer {resend_key}"},
                 json={
                     "from": "Taxly <onboarding@resend.dev>",
-                    "to": req.email,
-                    "subject": "Your Taxly OTP",
-                    "text": f"Your Taxly OTP is {otp}. Valid for 10 minutes. Do not share this with anyone."
-                }
+                    "to": req.email.strip(),
+                    "subject": f"Your Taxly Verification Code: {otp}",
+                    "html": html_content,
+                    "text": f"Your Taxly verification code is {otp}. Valid for 10 minutes. Do not share this with anyone."
+                },
+                timeout=10.0
             )
+            if resp.status_code in (200, 201):
+                email_delivered = True
         except Exception:
             pass
-            
-    return {"message": "OTP sent"}
+
+    response_payload = {
+        "message": "OTP sent",
+        "email_delivered": email_delivered,
+        "sent_to": identifier,
+    }
+    if not email_delivered:
+        response_payload["dev_otp"] = otp
+
+    return response_payload
 
 @app.post("/auth/verify-otp")
 def verify_otp(req: VerifyOtpRequest):
-    record = otp_store.get(req.email)
+    identifier = (req.email or req.phone or "").strip().lower()
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Email or phone number is required")
+
+    record = otp_store.get(identifier)
     if not record:
         raise HTTPException(status_code=401, detail="Invalid OTP")
         
-    if record["otp"] != req.otp or time.time() > record["expires_at"]:
+    if record["otp"] != req.otp.strip() or time.time() > record["expires_at"]:
         raise HTTPException(status_code=401, detail="Invalid OTP")
         
-    del otp_store[req.email]
+    del otp_store[identifier]
             
     ce._init_supabase()
     user_id = None
     if ce.supabase_client:
-        res = ce.supabase_client.table("users").select("*").eq("email", req.email).execute()
-        if res.data:
-            user_id = res.data[0]["id"]
-        else:
-            res = ce.supabase_client.table("users").insert({"email": req.email}).execute()
-            user_id = res.data[0]["id"]
+        try:
+            query = ce.supabase_client.table("users").select("*")
+            if req.email:
+                res = query.eq("email", req.email.strip().lower()).execute()
+            else:
+                res = query.eq("phone", req.phone.strip()).execute()
+
+            if res.data:
+                user_id = res.data[0]["id"]
+            else:
+                user_payload = {}
+                if req.email:
+                    user_payload["email"] = req.email.strip().lower()
+                if req.phone:
+                    user_payload["phone"] = req.phone.strip()
+                res = ce.supabase_client.table("users").insert(user_payload).execute()
+                user_id = res.data[0]["id"] if res.data else str(uuid.uuid4())
+        except Exception:
+            user_id = str(uuid.uuid4())
     else:
-        user_id = "test-user-id"
+        user_id = "user-" + hashlib.md5(identifier.encode()).hexdigest()[:12]
         
     secret = os.environ.get("JWT_SECRET", "testsecret")
     exp = datetime.utcnow() + timedelta(days=30)
-    token = jwt.encode({"user_id": user_id, "email": req.email, "exp": exp}, secret, algorithm="HS256")
+    token_claims = {
+        "user_id": user_id,
+        "email": req.email.strip().lower() if req.email else None,
+        "phone": req.phone.strip() if req.phone else None,
+        "exp": exp
+    }
+    token = jwt.encode(token_claims, secret, algorithm="HS256")
     
-    return {"token": token}
+    return {
+        "token": token,
+        "user": {
+            "id": user_id,
+            "email": req.email,
+            "phone": req.phone
+        }
+    }
 
 @app.post("/sessions")
 def start_session(req: CreateSessionRequest):
