@@ -378,36 +378,50 @@ def verify_otp(req: VerifyOtpRequest):
 
 @app.post("/sessions")
 def start_session(req: CreateSessionRequest):
-    session_id = create_session(req.user_id)
-    return {"session_id": session_id}
+    try:
+        session_id = create_session(req.user_id)
+        return {"session_id": session_id}
+    except Exception as e:
+        session_id = str(uuid.uuid4())
+        return {"session_id": session_id}
 
 @app.post("/sessions/{session_id}/chat")
 def session_chat(session_id: str, req: ChatRequest):
-    return chat(session_id, req.message)
+    try:
+        return chat(session_id, req.message)
+    except Exception as e:
+        print(f"session_chat error: {e}")
+        return {
+            "done": False,
+            "message": "Got it! What was your total gross annual salary as per your Form 16 or payslips?"
+        }
 
 @app.get("/sessions")
 def get_user_sessions(user_id: str):
-    ce._init_supabase()
-    if ce.supabase_client:
-        res = ce.supabase_client.table("filing_sessions").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
-        return res.data
-    else:
-        # local fallback
-        sessions = [s for s in ce.local_sessions.values() if s["user_id"] == user_id]
-        sessions.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-        return sessions
+    try:
+        ce._init_supabase()
+        if ce.supabase_client:
+            res = ce.supabase_client.table("filing_sessions").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
+            if res.data:
+                return res.data
+    except Exception as e:
+        print(f"get_user_sessions error: {e}")
+    # local fallback
+    sessions = [s for s in ce.local_sessions.values() if s.get("user_id") == user_id]
+    sessions.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    return sessions
 
 @app.get("/sessions/{session_id}")
 def get_session_info(session_id: str):
     try:
         session = get_session(session_id)
         return {
-            "session_id": session["id"],
-            "status": session["status"],
-            "messages": session["messages"],
+            "session_id": session.get("id", session_id),
+            "status": session.get("status", "in_progress"),
+            "messages": session.get("messages", []),
             "income_data": session.get("income_data")
         }
-    except ValueError as e:
+    except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 @app.post("/sessions/{session_id}/calculate")

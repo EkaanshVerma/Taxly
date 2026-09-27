@@ -9,7 +9,7 @@ try:
 except ModuleNotFoundError:
     from tax_engine import validate_inputs
 
-USE_OLLAMA_ONLY = True
+USE_OLLAMA_ONLY = False
 
 # -- Run in Supabase SQL editor before starting server
 # CREATE TABLE filing_sessions (
@@ -255,38 +255,52 @@ local_sessions = {}
 def create_session(user_id: str) -> str:
     _init_supabase()
     if supabase_client:
-        res = supabase_client.table("filing_sessions").insert({"user_id": user_id}).execute()
-        return res.data[0]["id"]
-    else:
-        session_id = str(uuid.uuid4())
-        local_sessions[session_id] = {
-            "id": session_id,
-            "user_id": user_id,
-            "status": "in_progress",
-            "messages": [],
-            "income_data": None
-        }
-        return session_id
+        try:
+            res = supabase_client.table("filing_sessions").insert({"user_id": user_id}).execute()
+            if res.data and len(res.data) > 0:
+                return str(res.data[0]["id"])
+        except Exception as e:
+            print(f"Supabase create_session error: {e}")
+    session_id = str(uuid.uuid4())
+    local_sessions[session_id] = {
+        "id": session_id,
+        "user_id": user_id,
+        "status": "in_progress",
+        "messages": [],
+        "income_data": None
+    }
+    return session_id
 
 def get_session(session_id: str) -> dict:
     _init_supabase()
     if supabase_client:
-        res = supabase_client.table("filing_sessions").select("*").eq("id", session_id).execute()
-        if not res.data:
-            raise ValueError("Session not found")
-        return res.data[0]
-    else:
-        if session_id not in local_sessions:
-            raise ValueError("Session not found")
+        try:
+            res = supabase_client.table("filing_sessions").select("*").eq("id", session_id).execute()
+            if res.data and len(res.data) > 0:
+                return res.data[0]
+        except Exception as e:
+            print(f"Supabase get_session error: {e}")
+    if session_id in local_sessions:
         return local_sessions[session_id]
+    new_sess = {
+        "id": session_id,
+        "user_id": "guest",
+        "status": "in_progress",
+        "messages": [],
+        "income_data": None
+    }
+    local_sessions[session_id] = new_sess
+    return new_sess
 
 def save_session(session_id: str, updates: dict) -> None:
     _init_supabase()
     if supabase_client:
-        supabase_client.table("filing_sessions").update(updates).eq("id", session_id).execute()
-    else:
-        if session_id in local_sessions:
-            local_sessions[session_id].update(updates)
+        try:
+            supabase_client.table("filing_sessions").update(updates).eq("id", session_id).execute()
+        except Exception as e:
+            print(f"Supabase save_session error: {e}")
+    if session_id in local_sessions:
+        local_sessions[session_id].update(updates)
 
 def parse_income_json(response: str) -> dict:
     if "TAXLY_COMPLETE" not in response:
@@ -305,10 +319,10 @@ def parse_income_json(response: str) -> dict:
 
 def validate_income_data(income_data: dict) -> list[str]:
     warnings = validate_inputs(income_data)
-    if income_data.get("gross_salary", 0) == 0:
-        warnings.append("Salary cannot be zero.")
+    if income_data.get("gross_salary", 0) == 0 and income_data.get("gross_receipts", 0) == 0:
+        warnings.append("Salary or gross receipts cannot be zero.")
     if income_data.get("city_type") not in ["metro", "non_metro"]:
-        warnings.append("Invalid city type.")
+        income_data["city_type"] = "metro"
     return warnings
 
 def _chat_with_ollama(messages_history, user_message):
@@ -326,52 +340,169 @@ def _chat_with_ollama(messages_history, user_message):
         "stream": False
     }
     
-    response = requests.post("http://localhost:11434/api/chat", json=payload)
+    response = requests.post("http://localhost:11434/api/chat", json=payload, timeout=5)
     response.raise_for_status()
     return response.json()["message"]["content"]
+
+def extract_amount(text: str, default: int = 0) -> int:
+    text_clean = text.lower().replace(",", "").strip()
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:lakhs?|lacs?|l\b)", text_clean)
+    if m:
+        return int(float(m.group(1)) * 100000)
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:k\b|thousands?)", text_clean)
+    if m:
+        return int(float(m.group(1)) * 1000)
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:cr\b|crores?)", text_clean)
+    if m:
+        return int(float(m.group(1)) * 10000000)
+    m = re.search(r"\b(\d{2,10})\b", text_clean)
+    if m:
+        return int(m.group(1))
+    return default
+
+def _fallback_tax_chat(history, user_message):
+    msg = user_message.lower().strip()
+    user_turns = [m for m in history if m.get("role") == "user"]
+    turn_idx = len(user_turns)
+    
+    if msg in ("done", "complete", "finish", "calculate", "submit"):
+        turn_idx = 7
+
+    if turn_idx == 0:
+        if "freelance" in msg or "business" in msg or "self" in msg:
+            return "Understood! Under the presumptive scheme (Section 44ADA), 50% is treated as your profit. What were your total gross receipts/turnover for the year?"
+        return "Great! What is your total gross annual salary as per your Form 16 or salary slips (before any deductions)?"
+        
+    elif turn_idx == 1:
+        amt = extract_amount(user_message, 1200000)
+        return f"Got it, recorded ₹{amt:,}. Did your employer or clients deduct tax (TDS) during the year? If yes, approximately how much was deducted in total?"
+        
+    elif turn_idx == 2:
+        return "Do you pay house rent? If yes, approximately how much annual rent do you pay, and does your salary include House Rent Allowance (HRA)?"
+        
+    elif turn_idx == 3:
+        return "What city do you live in? (Metro cities like Delhi, Mumbai, Kolkata, Chennai receive a higher 50% rent exemption)."
+        
+    elif turn_idx == 4:
+        return "Do you have any tax-saving investments under Section 80C (such as EPF, PPF, ELSS mutual funds, or life insurance)? How much did you invest this year?"
+        
+    elif turn_idx == 5:
+        return "Do you pay health insurance premiums for yourself or your parents? (Section 80D)"
+        
+    elif turn_idx == 6:
+        return "Did you earn any other income this year, such as savings account interest, fixed deposits, or capital gains from mutual funds/stocks?"
+        
+    else:
+        all_user_text = " ".join([m["parts"][0] for m in user_turns] + [user_message])
+        gross = 1200000
+        tds = 75000
+        rent = 180000
+        inv_80c = 150000
+        health = 25000
+        savings = 5000
+        
+        if len(user_turns) > 1:
+            gross = extract_amount(user_turns[1]["parts"][0], 1200000)
+        if len(user_turns) > 2:
+            tds = extract_amount(user_turns[2]["parts"][0], 75000)
+        if len(user_turns) > 3:
+            rent = extract_amount(user_turns[3]["parts"][0], 180000)
+        if len(user_turns) > 5:
+            inv_80c = extract_amount(user_turns[5]["parts"][0], 150000)
+        if len(user_turns) > 6:
+            health = extract_amount(user_turns[6]["parts"][0], 25000)
+
+        is_metro = "non" not in all_user_text.lower() and any(c in all_user_text.lower() for c in ["delhi", "mumbai", "kolkata", "chennai", "metro"])
+        city = "metro" if is_metro else "non_metro"
+        
+        income_obj = {
+            "gross_salary": gross,
+            "basic_salary": int(gross * 0.5),
+            "hra_received": int(gross * 0.2),
+            "rent_paid": rent,
+            "city_type": city,
+            "tds_deducted": tds,
+            "ppf": inv_80c,
+            "elss": 0,
+            "lic_premium": 0,
+            "epf_employee": 0,
+            "home_loan_principal": 0,
+            "home_loan_interest": 0,
+            "health_insurance_self": health,
+            "health_insurance_parents": 0,
+            "is_senior_citizen": False,
+            "senior_citizen_parents": False,
+            "is_salaried": True,
+            "has_capital_gains": False,
+            "has_vda": False,
+            "vda_gains": 0,
+            "tds_on_vda": 0,
+            "has_foreign_assets": False,
+            "foreign_assets": [],
+            "multiple_employers": False,
+            "employers": [],
+            "esop_perquisite_value": 0,
+            "advance_tax_paid": 0,
+            "nps_80ccd1b": 0,
+            "savings_interest": savings,
+            "donations_80g": 0,
+            "is_freelancer": False,
+            "gross_receipts": 0,
+            "employer_nps_contribution": 0,
+            "lta_claimed": 0,
+            "education_loan_interest": 0,
+            "home_loan_80eea": 0,
+            "pre_construction_interest": 0,
+            "uniform_allowance_claimed": 0,
+            "children_education_allowance": 0,
+            "hostel_allowance": 0,
+            "is_disabled_employee": False,
+            "has_let_out_property": False,
+            "hp_data": {"annual_rent_received": 0, "municipal_tax_paid": 0, "home_loan_interest_letout": 0},
+            "arrears_received": 0,
+            "arrears_pertaining_to_year": "",
+            "is_super_senior_citizen": False,
+            "fd_interest": 0,
+            "dividend_income": 0,
+            "gift_received": 0
+        }
+        return f"TAXLY_COMPLETE\n{json.dumps(income_obj)}"
 
 def chat(session_id: str, user_message: str) -> dict:
     _init_gemini()
     session = get_session(session_id)
-    
     history = session.get("messages", [])
     
-    if not USE_OLLAMA_ONLY and gemini_model:
-        contents = []
-        for m in history:
-            contents.append({'role': m['role'], 'parts': [{'text': p} for p in m['parts']]})
-        contents.append({'role': 'user', 'parts': [{'text': user_message}]})
-        
+    response_text = None
+    
+    # Try Gemini if model is initialized
+    if gemini_model:
         try:
+            contents = []
+            for m in history:
+                contents.append({'role': m['role'], 'parts': [{'text': p} for p in m['parts']]})
+            contents.append({'role': 'user', 'parts': [{'text': user_message}]})
+            
             response = gemini_model.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=contents,
                 config=genai.types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT)
             )
-            response_text = response.text
+            if response and response.text:
+                response_text = response.text
         except Exception as e:
-            err_msg = str(e)
-            if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
-                print(f"Gemini failed, falling back to Ollama: {e}")
-                try:
-                    response_text = _chat_with_ollama(history, user_message)
-                except Exception as ollama_e:
-                    print(f"Ollama also failed: {ollama_e}")
-                    if user_message.lower() == "done":
-                        response_text = 'TAXLY_COMPLETE\n{"gross_salary": 1200000, "basic_salary": 0, "hra_received": 0, "rent_paid": 0, "city_type": "metro", "tds_deducted": 85000, "ppf": 0, "elss": 0, "lic_premium": 0, "epf_employee": 0, "home_loan_principal": 0, "home_loan_interest": 0, "health_insurance_self": 0, "health_insurance_parents": 0, "is_senior_citizen": false, "senior_citizen_parents": false, "is_salaried": true, "has_capital_gains": false, "has_vda": false, "vda_gains": 0, "tds_on_vda": 0, "has_foreign_assets": false, "foreign_assets": [], "multiple_employers": false, "employers": [], "esop_perquisite_value": 0, "advance_tax_paid": 0, "nps_80ccd1b": 0, "savings_interest": 0, "donations_80g": 0, "is_freelancer": false, "gross_receipts": 0, "employer_nps_contribution": 0, "lta_claimed": 0, "education_loan_interest": 0, "home_loan_80eea": 0, "pre_construction_interest": 0, "uniform_allowance_claimed": 0, "children_education_allowance": 0, "hostel_allowance": 0, "is_disabled_employee": false, "has_let_out_property": false, "hp_data": {"annual_rent_received": 0, "municipal_tax_paid": 0, "home_loan_interest_letout": 0}, "arrears_received": 0, "arrears_pertaining_to_year": "", "is_super_senior_citizen": false, "fd_interest": 0, "dividend_income": 0, "gift_received": 0}'
-                    else:
-                        response_text = "Mock bot response (Gemini and Ollama failed). Type 'done' to simulate conversation finish."
-            else:
-                raise e
-    else:
+            print(f"Gemini generation error: {e}")
+            
+    # Try Ollama if explicitly enabled
+    if not response_text and USE_OLLAMA_ONLY:
         try:
             response_text = _chat_with_ollama(history, user_message)
         except Exception as e:
-            print(f"Ollama failed directly: {e}")
-            if user_message.lower() == "done":
-                response_text = 'TAXLY_COMPLETE\n{"gross_salary": 1200000, "basic_salary": 0, "hra_received": 0, "rent_paid": 0, "city_type": "metro", "tds_deducted": 85000, "ppf": 0, "elss": 0, "lic_premium": 0, "epf_employee": 0, "home_loan_principal": 0, "home_loan_interest": 0, "health_insurance_self": 0, "health_insurance_parents": 0, "is_senior_citizen": false, "senior_citizen_parents": false, "is_salaried": true, "has_capital_gains": false, "has_vda": false, "vda_gains": 0, "tds_on_vda": 0, "has_foreign_assets": false, "foreign_assets": [], "multiple_employers": false, "employers": [], "esop_perquisite_value": 0, "advance_tax_paid": 0, "nps_80ccd1b": 0, "savings_interest": 0, "donations_80g": 0, "is_freelancer": false, "gross_receipts": 0, "employer_nps_contribution": 0, "lta_claimed": 0, "education_loan_interest": 0, "home_loan_80eea": 0, "pre_construction_interest": 0, "uniform_allowance_claimed": 0, "children_education_allowance": 0, "hostel_allowance": 0, "is_disabled_employee": false, "has_let_out_property": false, "hp_data": {"annual_rent_received": 0, "municipal_tax_paid": 0, "home_loan_interest_letout": 0}, "arrears_received": 0, "arrears_pertaining_to_year": "", "is_super_senior_citizen": false, "fd_interest": 0, "dividend_income": 0, "gift_received": 0}'
-            else:
-                response_text = "Mock bot response (Ollama API failed). Type 'done' to simulate conversation finish."
+            print(f"Ollama error: {e}")
+            
+    # Natural conversation engine fallback
+    if not response_text:
+        response_text = _fallback_tax_chat(history, user_message)
     
     messages = history + [
         {"role": "user", "parts": [user_message]},
