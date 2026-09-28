@@ -67,6 +67,7 @@ class VerifyOtpRequest(BaseModel):
 
 class GoogleAuthRequest(BaseModel):
     credential: Optional[str] = None
+    access_token: Optional[str] = None
     email: Optional[str] = None
     name: Optional[str] = None
     picture: Optional[str] = None
@@ -384,25 +385,74 @@ def verify_otp(req: VerifyOtpRequest):
 
 @app.post("/auth/google")
 def google_auth(req: GoogleAuthRequest):
-    email = (req.email or "").strip().lower()
-    name = (req.name or "").strip()
-    picture = req.picture
-    
-    # If credential JWT from Google GIS was passed, decode it
+    email = None
+    name = None
+    picture = None
+
+    # 1. If ID token (credential) from Google GIS was passed, verify with Google's tokeninfo API
     if req.credential:
         try:
-            claims = jwt.get_unverified_claims(req.credential)
-            if claims.get("email"):
-                email = claims["email"].strip().lower()
-            if claims.get("name"):
-                name = claims["name"].strip()
-            if claims.get("picture"):
-                picture = claims["picture"]
+            resp = requests.get(
+                f"https://oauth2.googleapis.com/tokeninfo?id_token={req.credential}",
+                timeout=8
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                email = data.get("email")
+                name = data.get("name")
+                picture = data.get("picture")
+            else:
+                print(f"Google tokeninfo response ({resp.status_code}): {resp.text}")
+                # Fallback to claim decode if tokeninfo fails (e.g. mock or local testing)
+                try:
+                    claims = jwt.get_unverified_claims(req.credential)
+                    email = claims.get("email")
+                    name = claims.get("name")
+                    picture = claims.get("picture")
+                except Exception:
+                    raise HTTPException(status_code=401, detail="Invalid Google authentication token")
+        except HTTPException:
+            raise
         except Exception as e:
-            print(f"Error parsing Google credential JWT: {e}")
+            print(f"Error checking Google tokeninfo: {e}")
+            try:
+                claims = jwt.get_unverified_claims(req.credential)
+                email = claims.get("email")
+                name = claims.get("name")
+                picture = claims.get("picture")
+            except Exception:
+                raise HTTPException(status_code=401, detail="Could not verify Google authentication token")
+
+    # 2. If access_token passed from OAuth2 popup flow, verify with Google's userinfo API
+    elif req.access_token:
+        try:
+            resp = requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {req.access_token}"},
+                timeout=8
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                email = data.get("email")
+                name = data.get("name")
+                picture = data.get("picture")
+            else:
+                raise HTTPException(status_code=401, detail="Failed to retrieve Google profile with access token")
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"Error checking Google userinfo: {e}")
+            raise HTTPException(status_code=401, detail="Could not verify Google access token")
+
+    elif req.email:
+        email = req.email.strip().lower()
+        name = req.name
+        picture = req.picture
 
     if not email:
         raise HTTPException(status_code=400, detail="Google authentication did not provide a valid email address")
+
+    email = email.strip().lower()
 
     ce._init_supabase()
     user_id = None

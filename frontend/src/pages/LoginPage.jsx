@@ -15,7 +15,9 @@ export default function LoginPage() {
   const [devOtp, setDevOtp] = useState('')
   const [emailDelivered, setEmailDelivered] = useState(false)
   const [showGoogleModal, setShowGoogleModal] = useState(false)
-  const [googleEmailInput, setGoogleEmailInput] = useState('')
+  const [googleClientIdInput, setGoogleClientIdInput] = useState(
+    localStorage.getItem('taxly_google_client_id') || ''
+  )
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -64,10 +66,53 @@ export default function LoginPage() {
   const isValidPhone = (p) => /^[6-9]\d{9}$/.test(p.replace(/\s/g, ''))
   const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim())
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = (forcedId) => {
     setError('')
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-    if (clientId && window.google?.accounts?.id) {
+    const clientId = (forcedId || import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('taxly_google_client_id') || '').trim()
+
+    if (!clientId) {
+      setShowGoogleModal(true)
+      return
+    }
+
+    if (window.google?.accounts?.oauth2) {
+      setLoading(true)
+      try {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'email profile openid',
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error) {
+              setLoading(false)
+              if (tokenResponse.error !== 'popup_closed_by_user') {
+                setError(tokenResponse.error_description || 'Google sign-in was cancelled or failed')
+              }
+              return
+            }
+            try {
+              const res = await googleLogin({ access_token: tokenResponse.access_token })
+              const token = res.data?.token
+              localStorage.setItem('taxly_token', token)
+              if (res.data?.user?.email) localStorage.setItem('taxly_user_email', res.data.user.email)
+              if (res.data?.user?.id) localStorage.setItem('taxly_user_id', res.data.user.id)
+              toast.success('Signed in with Google!')
+              navigate('/dashboard')
+            } catch (err) {
+              setError(err.response?.data?.detail || 'Failed to authenticate with Google')
+            } finally {
+              setLoading(false)
+            }
+          }
+        })
+        client.requestAccessToken()
+        return
+      } catch (err) {
+        console.error('Google OAuth2 error:', err)
+        setLoading(false)
+      }
+    }
+
+    if (window.google?.accounts?.id) {
       try {
         setLoading(true)
         window.google.accounts.id.initialize({
@@ -95,40 +140,21 @@ export default function LoginPage() {
         setLoading(false)
       }
     }
-    setShowGoogleModal(true)
+
+    setError('Google authentication service is initializing. Please click again in 2 seconds.')
   }
 
-  const handleConfirmGoogleAuth = async (targetEmail) => {
-    const selected = (targetEmail || googleEmailInput || '').trim().toLowerCase()
-    if (!selected || !isValidEmail(selected)) {
-      setError('Please enter a valid Google email address')
+  const handleSaveGoogleClientId = (e) => {
+    e?.preventDefault()
+    const id = googleClientIdInput.trim()
+    if (!id || !id.includes('.apps.googleusercontent.com')) {
+      setError('Please enter a valid Google Client ID ending in .apps.googleusercontent.com')
       return
     }
-    setLoading(true)
-    setError('')
-    try {
-      const res = await googleLogin({
-        email: selected,
-        name: selected.split('@')[0],
-        picture: ''
-      })
-      const token = res.data?.token || ('google_jwt_' + Date.now())
-      localStorage.setItem('taxly_token', token)
-      localStorage.setItem('taxly_user_email', selected)
-      if (res.data?.user?.id) localStorage.setItem('taxly_user_id', res.data.user.id)
-      setShowGoogleModal(false)
-      toast.success(`Signed in as ${selected}!`)
-      navigate('/dashboard')
-    } catch {
-      const mockToken = btoa(JSON.stringify({ email: selected, provider: 'google', exp: Math.floor(Date.now() / 1000) + 86400 * 7 }))
-      localStorage.setItem('taxly_token', `header.${mockToken}.sig`)
-      localStorage.setItem('taxly_user_email', selected)
-      setShowGoogleModal(false)
-      toast.success(`Signed in as ${selected}!`)
-      navigate('/dashboard')
-    } finally {
-      setLoading(false)
-    }
+    localStorage.setItem('taxly_google_client_id', id)
+    setShowGoogleModal(false)
+    toast.success('Google Client ID connected!')
+    handleGoogleSignIn(id)
   }
 
   const handleSendOtp = async (e) => {
@@ -506,38 +532,31 @@ export default function LoginPage() {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
               </div>
-              <h3>Sign in with Google</h3>
-              <p>Choose an account to continue to Taxly</p>
+              <h3>Configure Google OAuth</h3>
+              <p>Enter your Google Cloud OAuth 2.0 Client ID to activate genuine Google Sign-In</p>
             </div>
 
-            <button
-              type="button"
-              className="lp-quick-account-btn"
-              onClick={() => handleConfirmGoogleAuth('ekaansh.vermagroup@gmail.com')}
-              disabled={loading}
-            >
-              <div className="lp-quick-account-avatar">E</div>
-              <div className="lp-quick-account-meta">
-                <div className="lp-quick-account-name">Ekaansh Verma</div>
-                <div className="lp-quick-account-email">ekaansh.vermagroup@gmail.com</div>
+            <form onSubmit={handleSaveGoogleClientId} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#94A3B8', marginBottom: '6px' }}>
+                  Google OAuth 2.0 Client ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="411522651537-xxxx.apps.googleusercontent.com"
+                  value={googleClientIdInput}
+                  onChange={e => setGoogleClientIdInput(e.target.value)}
+                  className="lp-input"
+                  autoFocus
+                />
               </div>
-              <span className="lp-arrow">→</span>
-            </button>
 
-            <div className="lp-modal-divider">or enter another Google account</div>
+              <div style={{ fontSize: '12px', color: '#64748B', lineHeight: '1.5' }}>
+                Copy the Client ID from Google Cloud Console &gt; APIs &amp; Services &gt; Credentials &gt; OAuth client ID.
+              </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleConfirmGoogleAuth(); }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <input
-                type="email"
-                placeholder="your.email@gmail.com"
-                value={googleEmailInput}
-                onChange={e => setGoogleEmailInput(e.target.value)}
-                className="lp-input"
-                autoFocus
-                disabled={loading}
-              />
-              <button type="submit" className="lp-btn-primary" disabled={loading || !googleEmailInput.trim()}>
-                {loading ? <span className="lp-spinner" /> : 'Continue'}
+              <button type="submit" className="lp-btn-primary" disabled={!googleClientIdInput.trim()}>
+                Save &amp; Connect Google
               </button>
             </form>
 
