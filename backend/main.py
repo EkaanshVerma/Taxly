@@ -65,6 +65,12 @@ class VerifyOtpRequest(BaseModel):
     phone: Optional[str] = None
     otp: str
 
+class GoogleAuthRequest(BaseModel):
+    credential: Optional[str] = None
+    email: Optional[str] = None
+    name: Optional[str] = None
+    picture: Optional[str] = None
+
 
 class CARegisterRequest(BaseModel):
     name: str
@@ -373,6 +379,69 @@ def verify_otp(req: VerifyOtpRequest):
             "id": user_id,
             "email": req.email,
             "phone": req.phone
+        }
+    }
+
+@app.post("/auth/google")
+def google_auth(req: GoogleAuthRequest):
+    email = (req.email or "").strip().lower()
+    name = (req.name or "").strip()
+    picture = req.picture
+    
+    # If credential JWT from Google GIS was passed, decode it
+    if req.credential:
+        try:
+            claims = jwt.get_unverified_claims(req.credential)
+            if claims.get("email"):
+                email = claims["email"].strip().lower()
+            if claims.get("name"):
+                name = claims["name"].strip()
+            if claims.get("picture"):
+                picture = claims["picture"]
+        except Exception as e:
+            print(f"Error parsing Google credential JWT: {e}")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Google authentication did not provide a valid email address")
+
+    ce._init_supabase()
+    user_id = None
+    if ce.supabase_client:
+        try:
+            res = ce.supabase_client.table("users").select("*").eq("email", email).execute()
+            if res.data and len(res.data) > 0:
+                user_id = res.data[0]["id"]
+            else:
+                user_payload = {"email": email}
+                if name:
+                    user_payload["name"] = name
+                res = ce.supabase_client.table("users").insert(user_payload).execute()
+                user_id = res.data[0]["id"] if res.data else str(uuid.uuid4())
+        except Exception as e:
+            print(f"Supabase google_auth error: {e}")
+            user_id = "user-" + hashlib.md5(email.encode()).hexdigest()[:12]
+    else:
+        user_id = "user-" + hashlib.md5(email.encode()).hexdigest()[:12]
+
+    secret = os.environ.get("JWT_SECRET", "testsecret")
+    exp = datetime.utcnow() + timedelta(days=30)
+    token_claims = {
+        "user_id": user_id,
+        "email": email,
+        "name": name,
+        "provider": "google",
+        "exp": exp
+    }
+    token = jwt.encode(token_claims, secret, algorithm="HS256")
+
+    return {
+        "token": token,
+        "user": {
+            "id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture,
+            "provider": "google"
         }
     }
 
