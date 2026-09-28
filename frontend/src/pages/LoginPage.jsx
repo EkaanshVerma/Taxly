@@ -68,7 +68,7 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = (forcedId) => {
     setError('')
-    const clientId = (forcedId || import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('taxly_google_client_id') || '').trim()
+    const clientId = (forcedId || import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('taxly_google_client_id') || '411522651537-v3akcqdj1r39gp2lj995158kqmqhaj8s.apps.googleusercontent.com').trim()
 
     if (!clientId) {
       setShowGoogleModal(true)
