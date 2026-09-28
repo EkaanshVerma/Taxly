@@ -40,6 +40,8 @@ export const sendPhoneOtp = (phone) =>
 
 export const verifyPhoneOtp = (phone, otp) =>
   axios.post(`${BASE}/auth/verify-otp`, { phone, otp })
-
 export const googleLogin = (payload) =>
   axios.post(`${BASE}/auth/google`, payload)
+
+export const deleteSession = (sessionId) =>
+  axios.delete(`${BASE}/sessions/${sessionId}`)
