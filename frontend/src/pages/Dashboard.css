@@ -77,6 +77,15 @@
   justify-content: center;
 }
 
+.g-brand-icon svg {
+  animation: sparkleSpin 8s infinite ease-in-out;
+}
+
+@keyframes sparkleSpin {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4)); }
+  50% { transform: scale(1.12) rotate(12deg); filter: drop-shadow(0 0 12px rgba(129, 140, 248, 0.7)); }
+}
+
 .g-brand-title {
   font-size: 19px;
   font-weight: 600;
@@ -473,6 +482,19 @@
   background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(20, 36, 68, 0.38) 0%, #0A0D14 75%);
   position: relative;
   overflow: hidden;
+  animation: gAuraBreath 10s infinite ease-in-out alternate;
+}
+
+@keyframes gAuraBreath {
+  0% {
+    background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(20, 36, 68, 0.38) 0%, #0A0D14 75%);
+  }
+  50% {
+    background: radial-gradient(ellipse 75% 65% at 50% 42%, rgba(26, 50, 95, 0.48) 0%, #0A0D14 75%);
+  }
+  100% {
+    background: radial-gradient(ellipse 68% 58% at 50% 48%, rgba(18, 30, 56, 0.35) 0%, #0A0D14 75%);
+  }
 }
 
 /* Top App Bar */
