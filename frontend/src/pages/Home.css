@@ -1602,171 +1602,84 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--line-soft);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 2px;
 }
 
 .home-page .ctx-rail-fill {
   position: absolute;
-  left: 0;
-  width: 2px;
-  background: var(--green);
-  border-radius: 2px;
-  transition: top 0.45s cubic-bezier(0.4, 0, 0.2, 1), height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  left: -0.5px;
+  width: 3px;
+  background: linear-gradient(180deg, #10B981 0%, #38BDF8 100%);
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-page .ctx-item {
-  padding: 26px 0 26px 26px;
+  padding: 24px 0 24px 28px;
   cursor: pointer;
-  transition: opacity 0.35s;
+  transition: opacity 0.35s ease, transform 0.3s ease;
+  position: relative;
 }
 
 .home-page .ctx-item h4 {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   margin-bottom: 6px;
-  transition: color 0.3s;
-  color: var(--txt-ghost);
+  transition: color 0.3s ease, transform 0.3s ease;
+  color: #64748B;
+  letter-spacing: -0.01em;
 }
 
 .home-page .ctx-item p {
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 14.5px;
+  line-height: 1.65;
   color: transparent;
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s, margin 0.4s;
+  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s ease, margin 0.4s ease;
 }
 
 .home-page .ctx-item.on h4 {
-  color: var(--txt);
+  color: #F8FAFC;
+  transform: translateX(2px);
 }
 
 .home-page .ctx-item.on p {
-  color: var(--txt-faint);
-  max-height: 90px;
-  margin-top: 6px;
+  color: #94A3B8;
+  max-height: 110px;
+  margin-top: 8px;
 }
 
 .home-page .ctx-item:hover h4 {
-  color: var(--txt-soft);
+  color: #CBD5E1;
 }
 
 .home-page .ctx-item.on:hover h4 {
-  color: var(--txt);
+  color: #FFFFFF;
 }
 
 .home-page .ctx-visual {
   position: sticky;
   top: 96px;
-  height: 460px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  min-height: 520px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
   overflow: hidden;
-  background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(91, 158, 126, 0.07), transparent 70%),
-             linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012));
-  display: grid;
-  place-items: center;
+  background: #090D14;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 940px) {
   .home-page .ctx-visual {
     position: relative;
     top: 0;
-    height: 380px;
+    min-height: 420px;
   }
-}
-
-.home-page .ctx-orb {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-}
-
-.home-page .ctx-svg {
-  width: 100%;
-  height: 100%;
-}
-
-.home-page .node {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.home-page .node circle {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.home-page .node text {
-  font-family: var(--mono);
-  font-size: 8.5px;
-  fill: var(--txt-ghost);
-  transition: fill 0.5s;
-}
-
-.home-page .node.on circle {
-  fill: rgba(91, 158, 126, 0.18);
-  stroke: var(--green);
-  r: 7;
-}
-
-.home-page .node.on text {
-  fill: var(--green-light);
-}
-
-.home-page .edge {
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 1;
-  transition: stroke 0.5s, stroke-width 0.5s;
-}
-
-.home-page .edge.on {
-  stroke: rgba(91, 158, 126, 0.45);
-  stroke-width: 1.4;
-}
-
-.home-page .ctx-core {
-  transition: all 0.5s;
-}
-
-.home-page .ctx-core-ring {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-dasharray: 3 5;
-  transform-origin: center;
-  animation: spin 60s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-page .ctx-core-ring {
-    animation: none;
-  }
-}
-
-.home-page .ctx-readout {
-  position: absolute;
-  bottom: 18px;
-  left: 18px;
-  right: 18px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--txt-faint);
-  background: rgba(11, 26, 51, 0.72);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--line-soft);
-  border-radius: 9px;
-  padding: 10px 13px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .home-page .ctx-readout b {

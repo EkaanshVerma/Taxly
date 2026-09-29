@@ -1,0 +1,272 @@
+/* TaxConstellationOrb.css — CodeRabbit-style Intricate Constellation Knowledge Graph */
+
+.cr-constellation-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, rgba(13, 18, 26, 0.95), rgba(7, 10, 15, 0.98));
+  border-radius: 20px;
+  user-select: none;
+}
+
+/* Ambient dynamic back-glow */
+.cr-constellation-ambient {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.8;
+  z-index: 1;
+}
+
+/* SVG Graphic Canvas */
+.cr-constellation-svg {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  z-index: 2;
+  filter: drop-shadow(0 12px 36px rgba(0, 0, 0, 0.6));
+}
+
+/* Outer boundary solid ring */
+.cr-outer-boundary {
+  transform-origin: 250px 250px;
+  transition: stroke 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+/* Middle dashed rotating ring */
+.cr-middle-dashed-ring {
+  transform-origin: 250px 250px;
+  animation: crSpinClockwise 50s linear infinite;
+  transition: stroke 0.6s ease;
+}
+
+/* Inner dashed counter-rotating ring */
+.cr-inner-dashed-ring {
+  transform-origin: 250px 250px;
+  animation: crSpinCounter 65s linear infinite;
+  transition: stroke 0.6s ease;
+}
+
+@keyframes crSpinClockwise {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes crSpinCounter {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* Network Edges */
+.cr-edges-group line {
+  transition: stroke 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke-width 0.4s ease,
+              stroke-opacity 0.4s ease;
+}
+
+.cr-edge-active {
+  stroke-dasharray: 6 3;
+  animation: crEdgeFlow 2.5s linear infinite;
+}
+
+@keyframes crEdgeFlow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+/* Nodes */
+.cr-node-item circle {
+  transition: r 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              fill 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke 0.4s ease;
+}
+
+.cr-node-active circle {
+  transform-origin: center;
+}
+
+.cr-node-pulse-ring {
+  transform-origin: center;
+  animation: crNodePulse 2.4s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+@keyframes crNodePulse {
+  0% {
+    r: 6;
+    opacity: 0.8;
+  }
+  50% {
+    r: 12;
+    opacity: 0.25;
+  }
+  100% {
+    r: 14;
+    opacity: 0;
+  }
+}
+
+/* Center Return Core */
+.cr-center-hub {
+  cursor: pointer;
+}
+
+.cr-center-pulse {
+  animation: crCoreGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes crCoreGlow {
+  0% {
+    filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4));
+  }
+  100% {
+    filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.7));
+  }
+}
+
+/* Interactive Node Tooltip */
+.cr-node-tooltip {
+  position: absolute;
+  transform: translate(-50%, -130%);
+  background: rgba(13, 18, 28, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 6px 12px;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+  animation: crTooltipIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes crTooltipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -115%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -130%) scale(1);
+  }
+}
+
+.cr-tt-cat {
+  font-family: var(--mono, monospace);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #38BDF8;
+}
+
+.cr-tt-label {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #F8FAFC;
+}
+
+/* Bottom HUD Status Bar */
+.cr-constellation-hud {
+  position: absolute;
+  bottom: 16px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(10, 14, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  z-index: 5;
+  font-family: var(--mono, monospace);
+  font-size: 10px;
+}
+
+.cr-hud-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cr-hud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+  animation: crBlink 2s infinite ease-in-out;
+}
+
+@keyframes crBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.cr-hud-tag {
+  color: #E2E8F0;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.cr-hud-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #94A3B8;
+  letter-spacing: 0.05em;
+}
+
+.cr-hud-stats b {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.cr-hud-sep {
+  opacity: 0.4;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .cr-middle-dashed-ring,
+  .cr-inner-dashed-ring,
+  .cr-edge-active,
+  .cr-node-pulse-ring,
+  .cr-center-pulse,
+  .cr-hud-dot {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .cr-constellation-wrap {
+    min-height: 380px;
+  }
+
+  .cr-constellation-hud {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+}

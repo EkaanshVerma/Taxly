@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createSession } from '../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
+import TaxConstellationOrb from '../components/TaxConstellationOrb'
 import './Home.css'
 
 export default function Home() {
@@ -1095,11 +1096,13 @@ export default function Home() {
       {/* ══ SCROLL-PINNED CONTEXT ══ */}
       <section className="ctx" id="context" style={{ padding: 0 }}>
         <div className="wrap ctx-head rv">
-          <div className="sec-num"><b>Context</b> Shared intelligence</div>
-          <h2>Every source, <em>one return.</em></h2>
+          <div className="sec-tag" style={{ color: '#10B981', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
+            SHARED INTELLIGENCE
+          </div>
+          <h2>Best-in-class context. <em>Every source, one return.</em></h2>
           <p className="sec-sub">
-            A Form 16 shows what one employer paid you. Your return has to account for everything else too —
-            Taxly pulls each source in and reconciles them against one another.
+            Across each step, Taxly ingests, normalizes, and reconciles dozens more data points than traditional tools —
+            guaranteeing zero missed exemptions and zero arithmetic discrepancies.
           </p>
         </div>
 
@@ -1122,60 +1125,7 @@ export default function Home() {
           </div>
 
           <div className="ctx-visual">
-            <div className="ctx-orb">
-              <svg className="ctx-svg" viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle className="ctx-core-ring" cx="210" cy="210" r="150" />
-                <circle className="ctx-core-ring" cx="210" cy="210" r="118" style={{ animationDirection: 'reverse', animationDuration: '44s' }} />
-
-                {/* Edges */}
-                <line className={`edge ${activeCtx === 0 ? 'on' : ''}`} data-edge="n1" x1="210" y1="210" x2="210" y2="72" />
-                <line className={`edge ${activeCtx === 1 ? 'on' : ''}`} data-edge="n2" x1="210" y1="210" x2="330" y2="141" />
-                <line className={`edge ${activeCtx === 2 ? 'on' : ''}`} data-edge="n3" x1="210" y1="210" x2="330" y2="279" />
-                <line className={`edge ${activeCtx === 3 ? 'on' : ''}`} data-edge="n4" x1="210" y1="210" x2="210" y2="348" />
-                <line className={`edge ${activeCtx === 4 ? 'on' : ''}`} data-edge="n5" x1="210" y1="210" x2="90" y2="279" />
-                <line className={`edge ${activeCtx === 5 ? 'on' : ''}`} data-edge="n6" x1="210" y1="210" x2="90" y2="141" />
-
-                {/* Core */}
-                <circle cx="210" cy="210" r="30" fill="rgba(91,158,126,.1)" stroke="rgba(91,158,126,.35)" />
-                <text x="210" y="207" textAnchor="middle" style={{ fontFamily: 'Inter Tight', fontSize: '14px', fontWeight: 600, fill: '#7DBFA0' }}>
-                  T
-                </text>
-                <text x="210" y="221" textAnchor="middle" style={{ fontFamily: 'var(--mono)', fontSize: '6.5px', fill: 'rgba(255,255,255,.35)', letterSpacing: '.08em' }}>
-                  RETURN
-                </text>
-
-                {/* Nodes */}
-                <g className={`node ${activeCtx === 0 ? 'on' : ''}`} data-node="n1">
-                  <circle cx="210" cy="72" r="5.5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" />
-                  <text x="210" y="56" textAnchor="middle">FORM 16</text>
-                </g>
-                <g className={`node ${activeCtx === 1 ? 'on' : ''}`} data-node="n2">
-                  <circle cx="330" cy="141" r="5.5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" />
-                  <text x="330" y="125" textAnchor="middle">STATEMENT</text>
-                </g>
-                <g className={`node ${activeCtx === 2 ? 'on' : ''}`} data-node="n3">
-                  <circle cx="330" cy="279" r="5.5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" />
-                  <text x="330" y="301" textAnchor="middle">CAP GAINS</text>
-                </g>
-                <g className={`node ${activeCtx === 3 ? 'on' : ''}`} data-node="n4">
-                  <circle cx="210" cy="348" r="5.5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" />
-                  <text x="210" y="370" textAnchor="middle">ANSWERS</text>
-                </g>
-                <g className={`node ${activeCtx === 4 ? 'on' : ''}`} data-node="n5">
-                  <circle cx="90" cy="279" r="5.5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" />
-                  <text x="90" y="301" textAnchor="middle">ENGINE</text>
-                </g>
-                <g className={`node ${activeCtx === 5 ? 'on' : ''}`} data-node="n6">
-                  <circle cx="90" cy="141" r="5.5" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" />
-                  <text x="90" y="125" textAnchor="middle">CA</text>
-                </g>
-              </svg>
-
-              <div className="ctx-readout">
-                <span>SOURCE · <b id="ctxName">{ctxItems[activeCtx].title}</b></span>
-                <span><b id="ctxCount">{activeCtx + 1}</b> / 6 RECONCILED</span>
-              </div>
-            </div>
+            <TaxConstellationOrb activeIdx={activeCtx} />
           </div>
         </div>
       </section>
