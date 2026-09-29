@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createSession } from '../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
-import CodeRabbitShowcase from '../components/CodeRabbitShowcase'
 import './Home.css'
 
 export default function Home() {
@@ -746,15 +745,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ══ CODERABBIT-STYLE INTERACTIVE ANIMATED SHOWCASE ══ */}
-      <section className="wrap rv" style={{ margin: '50px auto 70px auto' }}>
-        <div className="sec-head" style={{ marginBottom: '20px', textAlign: 'center' }}>
-          <div className="sec-tag">Autonomous Tax Engine</div>
-          <h2>Live Tax Optimization &amp; Compliance Audit</h2>
-          <p>Experience how Taxly ingests documents, detects deductions, compares regimes, and secures your return.</p>
-        </div>
-        <CodeRabbitShowcase />
-      </section>
 
       {/* ══ 01 CHAT ══ */}
       <section id="how">
