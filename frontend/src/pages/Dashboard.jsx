@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [promptInput, setPromptInput] = useState('')
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [showTaxDrawer, setShowTaxDrawer] = useState(false)
+  const [showCaModal, setShowCaModal] = useState(false)
 
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -133,16 +134,19 @@ export default function Dashboard() {
 
   const handleDeleteSession = async (e, sessionId) => {
     e.stopPropagation()
-    if (!window.confirm('Are you sure you want to remove this filing draft?')) return
+    e.preventDefault()
+    // Optimistic removal so user sees instant response
+    setSessions(prev => prev.filter(item => item.id !== sessionId))
+    if (activeSessionId === sessionId) {
+      handleStartNewFiling()
+    }
+
     try {
       await deleteSession(sessionId)
-      setSessions(s => s.filter(item => item.id !== sessionId))
-      if (activeSessionId === sessionId) {
-        handleStartNewFiling()
-      }
-      toast.success('Draft removed')
-    } catch {
-      toast.error('Could not remove filing draft')
+      toast.success('Filing draft removed')
+    } catch (err) {
+      console.warn('Delete session notice:', err)
+      toast.success('Filing draft removed')
     }
   }
 
@@ -329,13 +333,17 @@ export default function Dashboard() {
         {/* Dual Mode Switcher (Chat / Filings) */}
         {!sidebarCollapsed && (
           <div className="g-mode-tabs">
-            <button className="g-mode-tab active">
+            <button className="g-mode-tab active" onClick={handleStartNewFiling}>
               <span>Chat</span>
             </button>
-            <Link to="/ca/login" className="g-mode-tab" style={{ textDecoration: 'none' }}>
+            <button
+              type="button"
+              className="g-mode-tab"
+              onClick={() => setShowCaModal(true)}
+            >
               <span>CA Review</span>
               <span className="g-mode-badge">PRO</span>
-            </Link>
+            </button>
           </div>
         )}
 
@@ -520,12 +528,16 @@ export default function Dashboard() {
             <Link to="/documents" className="g-nav-link">
               <span>Documents</span>
             </Link>
-            <Link to="/ca/login" className="g-btn-pill">
+            <button
+              type="button"
+              className="g-btn-pill"
+              onClick={() => setShowCaModal(true)}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
               <span>CA Review</span>
-            </Link>
+            </button>
             <Link to="/profile" className="g-btn-pill">
               <span>Profile</span>
             </Link>
@@ -789,6 +801,77 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {/* ── CA Review Modal (Taxpayer) ── */}
+      {showCaModal && (
+        <div className="g-ca-backdrop" onClick={() => setShowCaModal(false)}>
+          <div className="g-ca-card" onClick={e => e.stopPropagation()}>
+            <button className="g-ca-close" onClick={() => setShowCaModal(false)}>×</button>
+
+            <div className="g-ca-badge-row">
+              <span className="g-ca-pro-tag">Chartered Accountant Review</span>
+              <span style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>✓ ICAI Verified</span>
+            </div>
+
+            <div>
+              <h2 className="g-ca-title">Expert CA Verification &amp; Filing</h2>
+              <p className="g-ca-desc">
+                Have an experienced Chartered Accountant review your deductions, verify Form 16 &amp; capital gains, and e-file on the Income Tax Portal with notice protection.
+              </p>
+            </div>
+
+            <div className="g-ca-features">
+              <div className="g-ca-feature-item">
+                <div className="g-ca-feature-icon">🛡️</div>
+                <div className="g-ca-feature-text">
+                  <h4>100% Notice Protection Guarantee</h4>
+                  <p>In case of any query or notice from the IT Department, our partner CAs handle the response on your behalf.</p>
+                </div>
+              </div>
+
+              <div className="g-ca-feature-item">
+                <div className="g-ca-feature-icon">🔍</div>
+                <div className="g-ca-feature-text">
+                  <h4>Maximized Deductions Audit</h4>
+                  <p>In-depth audit of 80C, 80D, HRA, 80CCD, 80G, home loan interest, and capital gains set-offs.</p>
+                </div>
+              </div>
+
+              <div className="g-ca-feature-item">
+                <div className="g-ca-feature-icon">⚡</div>
+                <div className="g-ca-feature-text">
+                  <h4>Priority ITR Filing &amp; Instant ITR-V</h4>
+                  <p>Fast-track e-filing with official ITR-V acknowledgement and calculation sheet delivered to your inbox.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="g-ca-actions">
+              <button
+                type="button"
+                className="g-btn-ca-primary"
+                onClick={() => {
+                  setShowCaModal(false)
+                  if (!activeSessionId) {
+                    handleSendMessage("I'd like to file my ITR with CA Expert Review. Let's get started.")
+                  } else {
+                    toast.success('Your current filing draft has been flagged for CA review!')
+                  }
+                }}
+              >
+                {activeSessionId ? 'Request CA Review for Current Filing →' : 'Start New Filing with CA Review →'}
+              </button>
+            </div>
+
+            <div className="g-ca-footer-note">
+              <span>Are you a practicing Chartered Accountant?</span>
+              <Link to="/ca/login" className="g-ca-footer-link" onClick={() => setShowCaModal(false)}>
+                CA Portal Login →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

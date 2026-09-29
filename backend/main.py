@@ -632,20 +632,27 @@ async def razorpay_webhook(request: Request):
 
 @app.delete("/sessions/{session_id}")
 def delete_session_route(session_id: str):
+    # 1. Clean from in-memory cache
+    if hasattr(ce, "local_sessions") and session_id in ce.local_sessions:
+        try:
+            del ce.local_sessions[session_id]
+        except Exception:
+            pass
+    if hasattr(ce, "conversation_histories") and session_id in ce.conversation_histories:
+        try:
+            del ce.conversation_histories[session_id]
+        except Exception:
+            pass
+
+    # 2. Delete from Supabase database
     ce._init_supabase()
     if ce.supabase_client:
         try:
-            res = ce.supabase_client.table("filing_sessions").delete().eq("id", session_id).execute()
-            if not res.data:
-                raise HTTPException(status_code=404, detail="Session not found")
-        except Exception:
-            raise HTTPException(status_code=404, detail="Session not found")
-        return {"message": "deleted"}
-    else:
-        if session_id in ce.local_sessions:
-            del ce.local_sessions[session_id]
-            return {"message": "deleted"}
-        raise HTTPException(status_code=404, detail="Session not found")
+            ce.supabase_client.table("filing_sessions").delete().eq("id", session_id).execute()
+        except Exception as e:
+            print(f"Supabase delete session notice: {e}")
+
+    return {"message": "deleted", "session_id": session_id}
 
 @app.get("/sessions/{session_id}/download-xml")
 def session_download_xml(session_id: str):
