@@ -432,9 +432,9 @@ export default function Home() {
                 </svg>
               )}
             </button>
-            <Link to="/login" className="btn btn-ghost">Sign in</Link>
+            <Link to="/login" className="btn btn-ghost">Log In</Link>
             <button onClick={startFiling} className="btn btn-fill" disabled={loading}>
-              {loading ? 'Starting...' : 'Start filing →'}
+              {loading ? 'Starting...' : 'Start a free trial →'}
             </button>
           </div>
         </div>
@@ -466,7 +466,7 @@ export default function Home() {
               every rupee that needs explaining, and puts a chartered accountant on the verdict.
             </p>
             <button onClick={startFiling} className="btn btn-fill btn-lg" disabled={loading}>
-              {loading ? 'Starting...' : 'Start filing free →'}
+              {loading ? 'Starting...' : 'Start a free trial →'}
             </button>
             <p className="hero-fine" style={{ marginTop: '12px' }}>
               NO CARD REQUIRED · PAY ON DOWNLOAD
@@ -1390,7 +1390,7 @@ export default function Home() {
           <h2>Start with the interview.<br />Pay when you <em>download.</em></h2>
           <p>20 MINUTES · NO CARD UPFRONT · CA-VERIFIED FROM ₹999</p>
           <button onClick={startFiling} className="btn btn-fill btn-lg" disabled={loading}>
-            {loading ? 'Starting...' : 'Start filing free →'}
+            {loading ? 'Starting...' : 'Start a free trial →'}
           </button>
         </div>
       </div>
