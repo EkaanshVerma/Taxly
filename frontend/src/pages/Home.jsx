@@ -18,23 +18,10 @@ export default function Home() {
   }, [theme])
 
   // ── Session start / Start filing ─────────────────────────────────────────────
-  const startFiling = useCallback(async (e) => {
+  const startFiling = useCallback((e) => {
     if (e && e.preventDefault) e.preventDefault()
-    if (loading) return
-    setLoading(true)
-    try {
-      const res = await createSession(uuidv4())
-      if (res?.data?.session_id) {
-        navigate(`/chat/${res.data.session_id}`)
-      } else {
-        navigate(`/chat/${uuidv4()}`)
-      }
-    } catch {
-      navigate(`/chat/${uuidv4()}`)
-    } finally {
-      setLoading(false)
-    }
-  }, [loading, navigate])
+    navigate('/dashboard')
+  }, [navigate])
 
   // ── Reduced motion check ───────────────────────────────────────────────────
   useEffect(() => {

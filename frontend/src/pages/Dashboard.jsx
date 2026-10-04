@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   createSession,
   getSessions,
@@ -17,6 +17,7 @@ const FIRST_BOT_MSG = "Hi! I'm Taxly. I'll help you file your income tax return 
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { sessionId } = useParams()
   const toast = useToast()
 
   // User details
@@ -81,6 +82,13 @@ export default function Dashboard() {
     loadPastSessions()
   }, [])
 
+  // Auto-load session if sessionId present in URL (e.g. /dashboard/:sessionId or /chat/:sessionId)
+  useEffect(() => {
+    if (sessionId && sessionId !== activeSessionId) {
+      handleSelectSession({ id: sessionId })
+    }
+  }, [sessionId])
+
   const loadPastSessions = async () => {
     try {
       const userId = localStorage.getItem('taxly_user_id')
@@ -97,6 +105,9 @@ export default function Dashboard() {
 
   // ── Switch to a past filing or create a new one ─────────────────
   const handleSelectSession = async (session) => {
+    if (sessionId !== session.id) {
+      navigate(`/dashboard/${session.id}`, { replace: true })
+    }
     setActiveSessionId(session.id)
     setActiveSessionData(session)
     setChatLoading(true)
@@ -130,6 +141,9 @@ export default function Dashboard() {
     setMessages([])
     setPromptInput('')
     setShowTaxDrawer(false)
+    if (sessionId) {
+      navigate('/dashboard', { replace: true })
+    }
   }
 
   const handleDeleteSession = async (e, sessionId) => {

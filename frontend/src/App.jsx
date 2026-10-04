@@ -89,7 +89,8 @@ export default function App() {
 
           {/* ── User (auth-gated) ── */}
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-          <Route path="/chat/:sessionId" element={<RequireAuth><ChatPage /></RequireAuth>} />
+          <Route path="/dashboard/:sessionId" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/chat/:sessionId" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/summary/:sessionId" element={<RequireAuth><SummaryPage /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
           <Route path="/documents" element={<RequireAuth><DocumentsPage /></RequireAuth>} />
