@@ -89,7 +89,7 @@ export default function Home() {
       'proving HRA claims.',
       'picking the regime.',
       'verifying the verdict.',
-      'getting CA sign-off.'
+      'getting CA sign off.'
     ]
     const STAGGER = 12
     const DUR = 210
