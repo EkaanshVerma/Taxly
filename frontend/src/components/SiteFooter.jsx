@@ -21,7 +21,7 @@ export default function SiteFooter({ theme }) {
             <h5>Product</h5>
             <a href="/#how">How it works</a>
             <a href="/#analyze">Statement analysis</a>
-            <a href="/#engine">Tax engine</a>
+            <Link to="/about#engine">Tax engine</Link>
             <a href="/#pricing">Pricing</a>
           </div>
           <div className="f-col">

@@ -494,43 +494,7 @@ export default function Home() {
       return
     }
 
-    const engineEl = document.getElementById('engine')
-    if (engineEl) {
-      engineEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-
-    if (highlightTimerRef.current) {
-      clearTimeout(highlightTimerRef.current)
-    }
-    document.querySelectorAll('.eng-c.eng-c-flash').forEach((card) => {
-      card.classList.remove('eng-c-flash')
-    })
-
-    const tickMap = {
-      'Capital gains': 'ITR-1 · ITR-2',
-      'Freelancer': 'ITR-3 · ITR-4',
-      'NRI': 'RESIDENCY',
-      'Crypto': 'NEWER HEADS',
-    }
-
-    const tickTarget = tickMap[persona]
-    if (!tickTarget) return
-
-    const cards = document.querySelectorAll('#engine .eng-c')
-    let targetCard = null
-    cards.forEach((card) => {
-      const tick = card.querySelector('.tick')
-      if (tick && tick.textContent.trim().includes(tickTarget)) {
-        targetCard = card
-      }
-    })
-
-    if (targetCard) {
-      targetCard.classList.add('eng-c-flash')
-      highlightTimerRef.current = setTimeout(() => {
-        targetCard.classList.remove('eng-c-flash')
-      }, 1500)
-    }
+    navigate(`/about?persona=${encodeURIComponent(persona)}#engine`)
   }
 
   return (
@@ -1283,51 +1247,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ ENGINE ══ */}
-      <section id="engine" style={{ borderTop: '1px solid var(--line-soft)' }}>
-        <div className="wrap">
-          <div className="sec-head rv">
-            <div className="sec-num"><b>Engine</b> The arithmetic</div>
-            <h2>AI reads. <em>Code calculates.</em></h2>
-            <p className="sec-sub">
-              The language model handles the conversation and the document parsing. Not one rupee of your
-              liability is computed by a model — that's deterministic Python, covered by 134 tests.
-            </p>
-          </div>
-          <div className="eng rv">
-            <div className="eng-c">
-              <span className="tick">ITR-1 · ITR-2</span>
-              <h4>Salary and capital gains</h4>
-              <p>Multiple employers, HRA across metro rules, LTCG with Jan-2018 grandfathering, STCG, debt funds with indexation.</p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">ITR-3 · ITR-4</span>
-              <h4>Business and professional</h4>
-              <p>Presumptive taxation under 44AD, 44ADA and 44AE, with the turnover thresholds applied correctly.</p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">RESIDENCY</span>
-              <h4>NRI and RNOR</h4>
-              <p>DTAA relief across six treaty countries, the 20% special rate under 115E, and RNOR foreign-income exemption.</p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">CHAPTER VI-A</span>
-              <h4>Twenty-plus deductions</h4>
-              <p>80C through 80U including 80EE/80EEA exclusivity, 80GG when HRA doesn't apply, and 80DDB age bands.</p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">EDGE CASES</span>
-              <h4>Where returns actually break</h4>
-              <p>Surcharge with marginal relief, AMT above ₹20L, agricultural partial integration, Section 89 arrears relief.</p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">NEWER HEADS</span>
-              <h4>Crypto and gaming</h4>
-              <p>VDA at a flat 30% with no set-off, and online gaming winnings under 115BBJ with TDS credited.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* ══ LIVE CALCULATOR ══ */}
       <section id="calculator" style={{ borderTop: '1px solid var(--line-soft)' }}>
@@ -1548,51 +1468,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ══ TRUST ══ */}
-      <section id="trust" style={{ borderTop: '1px solid var(--line-soft)' }}>
-        <div className="wrap">
-          <div className="sec-head rv">
-            <div className="sec-num"><b>Trust</b> How we handle your data</div>
-            <h2>Your PAN is not <em>our product.</em></h2>
-          </div>
-          <div className="trust-grid rv">
-            <div className="eng-c">
-              <span className="tick">STORAGE</span>
-              <h4>Encrypted at rest</h4>
-              <p>
-                Your documents and filing data are stored in Supabase with row-level
-                security — accessible only to your account and the CA assigned to your
-                filing.
-              </p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">USAGE</span>
-              <h4>Never sold, never shared</h4>
-              <p>
-                Your data is used exclusively to prepare your ITR. We don't sell it,
-                rent it, or use it for anything beyond the filing you asked for.
-              </p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">AI SCOPE</span>
-              <h4>AI reads. It doesn't decide.</h4>
-              <p>
-                Language models handle conversation and document parsing. Every number
-                in your return comes from deterministic code, and every flagged deduction
-                is checked by a human before it's accepted.
-              </p>
-            </div>
-            <div className="eng-c">
-              <span className="tick">ACCOUNTABILITY</span>
-              <h4>Mistakes are on us</h4>
-              <p>
-                If our calculation engine causes a defect notice, we file your revised
-                return at no cost and cover any interest directly caused by our error.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ══ FOOTER ══ */}
       <SiteFooter theme={theme} />
