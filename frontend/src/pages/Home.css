@@ -2675,16 +2675,16 @@
 }
 
 .faq-topic-btn.active {
-  border-color: #E67E48;
-  color: #E67E48;
-  background: rgba(230, 126, 72, 0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
   font-weight: 600;
 }
 
 .home-page[data-theme="light"] .faq-topic-btn.active {
-  border-color: #D96028;
-  color: #D96028;
-  background: rgba(217, 96, 40, 0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .faq-topic-count {
