@@ -410,7 +410,7 @@ export default function Pricing() {
           </div>
 
           <p className="pricing-footnote">
-            Prices in INR. [GST included/excluded — TODO(owner)]
+            All prices in INR · 18% GST applicable at checkout · Formal tax invoice provided with your business GSTIN
           </p>
         </section>
 

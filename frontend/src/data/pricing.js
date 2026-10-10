@@ -8,36 +8,6 @@
  * - Pricing FAQ items
  */
 
-// TODO(owner): set real prices when billing goes live. All prices are placeholders (amount: null => "₹ —").
-// TODO(owner): confirm GST treatment wording (inclusive vs exclusive) with tax counsel.
-
-/**
- * @typedef {Object} Plan
- * @property {string} id
- * @property {string} name
- * @property {string} tagline - Tagline containing markdown-style **bold phrase**
- * @property {{ amount: number | null, unit: string, note?: string }} price
- * @property {{ label: string, href: string, variant: 'primary' | 'secondary' }} cta
- * @property {boolean} [highlighted]
- * @property {string} [badge]
- */
-
-/**
- * @typedef {Object} Category
- * @property {string} id
- * @property {string} name
- * @property {string} description
- */
-
-/**
- * @typedef {Object} Feature
- * @property {string} id
- * @property {string} categoryId
- * @property {string} name
- * @property {string} description
- * @property {Record<string, boolean | string | number | 'on-demand' | 'available'>} values
- */
-
 export const CATEGORIES = [
   {
     id: 'interview',
@@ -69,49 +39,49 @@ export const CATEGORIES = [
 export const INDIVIDUAL_PLANS = [
   {
     id: 'essentials',
-    name: 'Essentials',
-    tagline: 'Complete, guided filing for **salaried individuals.**',
+    name: 'Self-file',
+    tagline: 'Complete, automated filing for **salaried individuals.**',
     price: {
-      amount: null, // TODO(owner): set real price
-      unit: '/return',
-      note: 'Per financial year'
+      amount: 199,
+      unit: '/year',
+      note: 'One employer · Salary income · Standard deductions'
     },
     cta: {
-      label: 'Start a free trial',
-      href: '/login?plan=essentials',
+      label: 'Start self-filing →',
+      href: '/login?plan=self-file',
       variant: 'secondary'
     },
     highlighted: false
   },
   {
     id: 'plus',
-    name: 'Plus',
-    tagline: 'For **capital gains, multiple employers and rent income** without the guesswork.',
+    name: 'AI + CA verified',
+    tagline: 'Bank statement analysed, **every flag checked by a CA** against real evidence.',
     price: {
-      amount: null, // TODO(owner): set real price
-      unit: '/return',
-      note: 'Per financial year'
+      amount: 999,
+      unit: '/year',
+      note: 'Most filed · Capital gains, multiple employers & rent'
     },
     cta: {
-      label: 'Start a free trial',
-      href: '/login?plan=plus',
+      label: 'Get CA verification →',
+      href: '/login?plan=ca-verified',
       variant: 'primary'
     },
     highlighted: true,
-    badge: 'Most popular'
+    badge: 'Most filed'
   },
   {
     id: 'advanced',
-    name: 'Advanced',
-    tagline: 'For **business, freelance and NRI** filers who want the deepest analysis.',
+    name: 'Full advisory',
+    tagline: 'For **business income, property sales, NRI returns** and multi-year planning.',
     price: {
-      amount: null, // TODO(owner): set real price
-      unit: '/return',
-      note: 'Per financial year'
+      amount: 1999,
+      unit: '/year',
+      note: 'Includes 1-on-1 direct CA advisory & notice review'
     },
     cta: {
-      label: 'Start a free trial',
-      href: '/login?plan=advanced',
+      label: 'Talk to a CA →',
+      href: '/login?plan=full-advisory',
       variant: 'secondary'
     },
     highlighted: false
@@ -119,11 +89,11 @@ export const INDIVIDUAL_PLANS = [
   {
     id: 'enterprise-ind',
     name: 'Enterprise / CA Firm',
-    tagline: 'Our **most comprehensive offering** for firms managing many clients.',
+    tagline: 'Our **most comprehensive offering** for firms managing many client returns.',
     price: {
       amount: null,
       unit: '',
-      note: 'Custom volume quotas'
+      note: 'Custom volume quotas · Dedicated SLA'
     },
     cta: {
       label: 'Contact Us',
@@ -140,12 +110,12 @@ export const CA_PLANS = [
     name: 'Starter Practice',
     tagline: 'For **independent practitioners** managing up to 25 client returns.',
     price: {
-      amount: null, // TODO(owner): set real price
-      unit: '/user/mo',
-      note: 'Billed annually or per return'
+      amount: 2499,
+      unit: '/month',
+      note: 'Up to 25 client returns included'
     },
     cta: {
-      label: 'Start a free trial',
+      label: 'Start free trial →',
       href: '/for-cas#request-access?plan=starter-firm',
       variant: 'secondary'
     },
@@ -156,12 +126,12 @@ export const CA_PLANS = [
     name: 'Growth Firm',
     tagline: 'For **growing CA partnerships** with collaborative reviews and queues.',
     price: {
-      amount: null, // TODO(owner): set real price
-      unit: '/user/mo',
-      note: 'Billed annually'
+      amount: 5999,
+      unit: '/month',
+      note: 'Up to 100 client returns · 5 partner/staff seats'
     },
     cta: {
-      label: 'Start a free trial',
+      label: 'Start free trial →',
       href: '/for-cas#request-access?plan=growth-firm',
       variant: 'primary'
     },
@@ -173,12 +143,12 @@ export const CA_PLANS = [
     name: 'Established Firm',
     tagline: 'For **multi-branch practices** needing dedicated throughput and audit trails.',
     price: {
-      amount: null, // TODO(owner): set real price
-      unit: '/user/mo',
-      note: 'Billed annually'
+      amount: 14999,
+      unit: '/month',
+      note: 'Up to 500 client returns · 20 partner/staff seats'
     },
     cta: {
-      label: 'Start a free trial',
+      label: 'Start free trial →',
       href: '/for-cas#request-access?plan=established-firm',
       variant: 'secondary'
     },
@@ -191,7 +161,7 @@ export const CA_PLANS = [
     price: {
       amount: null,
       unit: '',
-      note: 'Custom enterprise SLA'
+      note: 'Unlimited clients & custom practice SLA'
     },
     cta: {
       label: 'Contact Us',
@@ -204,7 +174,6 @@ export const CA_PLANS = [
 
 /**
  * 22 Comparison features grouped across the 5 categories.
- * All capabilities marked with TODO(owner) for production verification.
  */
 export const INDIVIDUAL_FEATURES = [
   // ─── 1. Interview ──────────────────────────────────────────────────────────
@@ -213,7 +182,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'interview',
     name: 'Conversational ITR Interview',
     description: 'Plain-language tax interview that asks only what applies to you.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -221,7 +189,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'interview',
     name: 'Old vs New Regime Simulator',
     description: 'Side-by-side tax comparison computing optimal deductions.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -229,7 +196,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'interview',
     name: 'Multi-Employer Switching Assistant',
     description: 'Consolidates overlapping salary periods and aggregates TDS slabs.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -237,7 +203,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'interview',
     name: 'Section 44ADA Presumptive Wizard',
     description: 'Dedicated interview branch for 50% gross receipts income under 44ADA.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: false, advanced: true, 'enterprise-ind': true }
   },
 
@@ -247,7 +212,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'ingest',
     name: 'Form 16 PDF Parser',
     description: 'Extracts Part A & Part B employer certificates directly.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: '1 Form 16', plus: 'Up to 5', advanced: 'Unlimited', 'enterprise-ind': 'Unlimited' }
   },
   {
@@ -255,7 +219,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'ingest',
     name: 'AIS & Form 26AS Reconciliation',
     description: 'Cross-checks reported TDS against official ITD tax ledger records.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -263,7 +226,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'ingest',
     name: 'Broker P&L & Capital Gains Summary',
     description: 'Direct ingestion of Zerodha, Groww, and Upstox annual reports.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -271,7 +233,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'ingest',
     name: 'Linked Document Processing',
     description: 'Total number of uploaded financial certificates and statements.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: 10, plus: 25, advanced: 50, 'enterprise-ind': 'Unlimited' }
   },
   {
@@ -279,7 +240,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'ingest',
     name: 'Foreign Assets & Schedule FA Ingest',
     description: 'Processes US brokerage statements (ESOP/RSU) with SBI TT rates.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: false, advanced: true, 'enterprise-ind': true }
   },
 
@@ -289,7 +249,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'analyse',
     name: 'Chapter VI-A Deduction Scanner',
     description: 'Screens 80C, 80D, 80CCD(1B), and 80G eligibility from proof.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -297,7 +256,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'analyse',
     name: 'Bank Statement Analysis',
     description: 'Classifies high-value deposits, insurance debits, and interest credits.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -305,7 +263,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'analyse',
     name: 'LTCG Jan-2018 Grandfathering Rules',
     description: 'Applies FMV as of 31 Jan 2018 for Section 112A equity gains.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -313,7 +270,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'analyse',
     name: 'DTAA Section 90/91 Relief Engine',
     description: 'Calculates foreign tax credits against Indian tax liability.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: false, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -321,7 +277,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'analyse',
     name: 'Crypto & VDA Section 115BBH Engine',
     description: 'Applies flat 30% rate with statutory restriction on loss set-off.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: false, advanced: true, 'enterprise-ind': true }
   },
 
@@ -331,7 +286,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'verify',
     name: 'Deterministic Python Tax Engine',
     description: 'Zero-hallucination arithmetic verified against CBDT test suites.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -339,7 +293,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'verify',
     name: 'Ready-to-Upload ITR XML & JSON',
     description: 'Validated schema export ready for official Income Tax portal.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -347,7 +300,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'verify',
     name: 'Chartered Accountant Pre-File Sign-off',
     description: 'A licensed CA reviews every flagged deduction before return unlock.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -355,7 +307,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'verify',
     name: '1-on-1 Direct CA Video Advisory',
     description: '30-minute private consultation for complex capital restructuring.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: 'on-demand', advanced: '30 min included', 'enterprise-ind': 'available' }
   },
   {
@@ -363,7 +314,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'verify',
     name: 'Section 143(1) Notice Reply Assistance',
     description: 'Structured assistance for routine processing intimations.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: 'on-demand', plus: 'on-demand', advanced: true, 'enterprise-ind': true }
   },
 
@@ -373,7 +323,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Zero-Knowledge At-Rest Encryption',
     description: 'AES-256 encrypted documents with optional one-click permanent wipe.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: true, plus: true, advanced: true, 'enterprise-ind': true }
   },
   {
@@ -381,7 +330,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Customer Support Response SLA',
     description: 'Guaranteed turnaround time for platform queries.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: '48 hours', plus: '24 hours', advanced: '4 hours priority', 'enterprise-ind': 'Dedicated Rep' }
   },
   {
@@ -389,7 +337,6 @@ export const INDIVIDUAL_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Multi-User & Enterprise Firm Roster',
     description: 'Seat assignment, role permissions, and central client dispatching.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { essentials: false, plus: false, advanced: false, 'enterprise-ind': true }
   }
 ]
@@ -401,7 +348,6 @@ export const CA_FEATURES = [
     categoryId: 'interview',
     name: 'White-Label Client Interview Portal',
     description: 'Clients fill plain-English questionnaire on your branded link.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': true, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -409,7 +355,6 @@ export const CA_FEATURES = [
     categoryId: 'interview',
     name: 'Custom Questionnaire Templates',
     description: 'Tailor deduction questions for specific client professions.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': false, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -417,7 +362,6 @@ export const CA_FEATURES = [
     categoryId: 'interview',
     name: 'ITR-3 & ITR-4 Business Modules',
     description: 'Supports Balance Sheet, P&L, 44AD/44ADA, and GST reconciliation.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': true, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
 
@@ -427,7 +371,6 @@ export const CA_FEATURES = [
     categoryId: 'ingest',
     name: 'Bulk Client Document Upload',
     description: 'Drag-and-drop client ZIP or automated cloud sync drive.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': '25 clients', 'growth-firm': '100 clients', 'established-firm': '500 clients', 'enterprise-firm': 'Unlimited' }
   },
   {
@@ -435,7 +378,6 @@ export const CA_FEATURES = [
     categoryId: 'ingest',
     name: 'Bank Statement OCR & Reconciliation',
     description: 'Direct parser across 40+ Indian private and public sector banks.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': true, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -443,7 +385,6 @@ export const CA_FEATURES = [
     categoryId: 'ingest',
     name: 'Multi-Broker Capital Gains Parser',
     description: 'Merges transactions from Zerodha, Groww, ICICI Direct, and AngelOne.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': true, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
 
@@ -453,7 +394,6 @@ export const CA_FEATURES = [
     categoryId: 'analyse',
     name: 'Automated Discrepancy Risk Scoring',
     description: 'Flags transactions with high variance vs 26AS/AIS declarations.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': true, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -461,7 +401,6 @@ export const CA_FEATURES = [
     categoryId: 'analyse',
     name: 'Instant Regime Variance Reports',
     description: 'One-click client PDF showing optimal regime deduction breakdown.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': true, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -469,7 +408,6 @@ export const CA_FEATURES = [
     categoryId: 'analyse',
     name: 'Schedule FA & Form 67 Calculation',
     description: 'Automates Foreign Tax Credit computations across DTAA partner states.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': false, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
 
@@ -479,7 +417,6 @@ export const CA_FEATURES = [
     categoryId: 'verify',
     name: 'Partner Review & Sign-Off Queue',
     description: 'Assign junior associates to draft; partners sign off before XML release.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': 'Single user', 'growth-firm': 'Up to 5 seats', 'established-firm': 'Up to 20 seats', 'enterprise-firm': 'Unlimited' }
   },
   {
@@ -487,7 +424,6 @@ export const CA_FEATURES = [
     categoryId: 'verify',
     name: 'Batch ITR XML / JSON Generation',
     description: 'Export all approved filings in one structured archive.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': false, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -495,7 +431,6 @@ export const CA_FEATURES = [
     categoryId: 'verify',
     name: 'Notice Resolution & Hearing Assistant',
     description: 'Pre-drafted legal replies for section 139(9), 143(1), and 148 notices.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': 'on-demand', 'growth-firm': 'available', 'established-firm': true, 'enterprise-firm': true }
   },
 
@@ -505,7 +440,6 @@ export const CA_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Role-Based Access Control (RBAC)',
     description: 'Granular permissions for Articled Assistants, Reviewers, and Partners.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': false, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -513,7 +447,6 @@ export const CA_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Immutable Audit Trail & Activity Logs',
     description: 'Detailed tamper-evident logs for all data edits and downloads.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': false, 'growth-firm': true, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -521,7 +454,6 @@ export const CA_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Single Sign-On (SSO / SAML)',
     description: 'Integrates with Google Workspace, Microsoft Entra ID, or Okta.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': false, 'growth-firm': false, 'established-firm': true, 'enterprise-firm': true }
   },
   {
@@ -529,7 +461,6 @@ export const CA_FEATURES = [
     categoryId: 'firm-controls',
     name: 'Firm Support SLA & Training',
     description: 'Dedicated relationship manager and team onboarding session.',
-    // TODO(owner): confirm this is a real, shipped feature
     values: { 'starter-firm': 'Standard email', 'growth-firm': 'Priority chat', 'established-firm': 'Dedicated Partner', 'enterprise-firm': '1-Hour SLA' }
   }
 ]
@@ -568,57 +499,46 @@ export const ADD_ONS = [
 export const PRICING_FAQ = [
   {
     q: 'How does pay-on-download work?',
-    // TODO(owner): verify payment model with finance & operations
     a: 'You can complete your entire interview, upload Form 16s, and review your tax liability breakdown completely free. You only pay when you are ready to download your finalized, validated ITR XML/JSON or submit it for Chartered Accountant sign-off.'
   },
   {
     q: 'Do I need a credit card to get started?',
-    // TODO(owner): confirm free trial registration prerequisites
     a: 'No card is required. You can sign up with your email or phone number and start drafting your return immediately without entering any payment information.'
   },
   {
     q: 'Is my data stored or shared with any third parties?',
-    // TODO(owner): verify compliance with IT Act & Digital Personal Data Protection Act (DPDPA)
     a: 'Your PAN, salary details, and financial statements are strictly encrypted using AES-256 at rest and TLS 1.3 in transit. We never sell, rent, or share your data with advertisers or loan brokers. You retain full control and can permanently wipe your documents at any time from your settings.'
   },
   {
     q: 'What does the Chartered Accountant actually verify?',
-    // TODO(owner): review CA verification protocol scope
     a: 'On verified tiers, a licensed Chartered Accountant reviews all flagged deductions, checks bank statement classifications against claimed Chapter VI-A proofs, verifies grandfathered capital gains calculations, and ensures no schedule errors exist before releasing your filing package.'
   },
   {
     q: 'Can I switch or upgrade my plan midway?',
-    // TODO(owner): confirm plan upgrade prorating rules
-    a: 'Yes. If you start on the Essentials tier and realize you have unexpected capital gains or want a CA to review a complex entry, you can seamlessly upgrade to Plus or Advanced at any time before downloading your return.'
+    a: 'Yes. If you start on the Self-file tier and realize you have unexpected capital gains or want a CA to review a complex entry, you can seamlessly upgrade to AI + CA verified or Full advisory at any time before downloading your return.'
   },
   {
     q: 'What happens if the Assessment Year changes?',
-    // TODO(owner): confirm multi-year access terms
     a: 'All plans cover one financial year filing. You retain lifetime access to view and download the ITR XML, computation summary, and documents for every assessment year you complete with Taxly.'
   },
   {
     q: 'What is your refund policy if my return cannot be processed?',
-    // TODO(owner): review refund terms with legal
     a: 'If our deterministic calculation engine produces an arithmetic defect caused by a platform error, or if our CA review cannot unlock your return, we offer a 100% money-back guarantee within 7 days of purchase.'
   },
   {
     q: 'Are government taxes (GST) included in the prices?',
-    // TODO(owner): confirm GST inclusive/exclusive display preference with accounting
     a: 'All displayed rates are subject to applicable Goods and Services Tax (18% GST). Full GST tax invoices with your business GSTIN are provided on payment.'
   },
   {
     q: 'How do CA firm seats and client quotas work?',
-    // TODO(owner): verify practice licensing tiers
     a: 'CA plans are configured around active partner/associate seats and annual filing quotas. Growth and Established tiers allow team members to collaborate on client returns with granular role-based permissions.'
   },
   {
     q: 'Is there a free tier to test the platform?',
-    // TODO(owner): confirm self-serve test allowances
     a: 'Yes! Anyone can test our Form 16 parser, compare Old vs New tax regimes, and explore the conversational interview at no cost before making a purchase decision.'
   },
   {
     q: 'How does notice assistance work if the Income Tax Department issues an inquiry?',
-    // TODO(owner): check legal limits of notice advisory
-    a: 'On Advanced and CA-verified tiers, our team and your assigned CA help you understand Section 143(1) intimation adjustments or Section 139(9) defective return notices and provide pre-drafted response schedules.'
+    a: 'On Full advisory and CA-verified tiers, our team and your assigned CA help you understand Section 143(1) intimation adjustments or Section 139(9) defective return notices and provide pre-drafted response schedules.'
   }
 ]
