@@ -155,8 +155,10 @@
   transition: color 0.15s;
 }
 
-.home-page .nav-links a:hover {
+.home-page .nav-links a:hover,
+.home-page .nav-links a.active {
   color: var(--txt);
+  font-weight: 600;
 }
 
 .home-page .nav-right {

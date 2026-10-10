@@ -20,7 +20,7 @@ import CADashboardPage from './pages/CADashboardPage'
 import CAClientDetailPage from './pages/CAClientDetailPage'
 
 // Static pages
-import PricingPage from './pages/static/PricingPage'
+import Pricing from './pages/Pricing'
 import AIExplainerPage from './pages/static/AIExplainerPage'
 import SecurityPage from './pages/static/SecurityPage'
 import PrivacyPolicyPage from './pages/static/PrivacyPolicyPage'
@@ -125,7 +125,7 @@ export default function App() {
           } />
 
           {/* ── Static ── */}
-          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/pricing/which-tier" element={<PricingWhichTierPage />} />
           <Route path="/features/bank-statement-review" element={<AIExplainerPage />} />
           <Route path="/security" element={<SecurityPage />} />

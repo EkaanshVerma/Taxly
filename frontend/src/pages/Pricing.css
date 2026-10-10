@@ -1,0 +1,939 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRICING PAGE STYLING (CODERABBIT ARCHITECTURE)
+   Tokens: --bg, --surface, --surface-raised, --border, --text, --text-muted,
+           --cta, --accent, --accent-soft, --teal, --warning, --danger
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.pricing-page {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-family: var(--sans, 'Inter', system-ui, sans-serif);
+  line-height: 1.5;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.pricing-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (min-width: 768px) {
+  .pricing-wrap {
+    padding: 0 32px;
+  }
+}
+
+/* ─── Visually Hidden (Accessibility) ─────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Section Spacing ─────────────────────────────────────────────────────── */
+.pricing-section {
+  padding: 64px 0;
+}
+
+@media (min-width: 960px) {
+  .pricing-section {
+    padding: 96px 0;
+  }
+}
+
+/* ─── 1. Header & Hero ─────────────────────────────────────────────────────── */
+.pricing-header {
+  text-align: center;
+  padding-top: 56px;
+  padding-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .pricing-header {
+    padding-top: 80px;
+    padding-bottom: 32px;
+  }
+}
+
+.pricing-title {
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.pricing-subtitle {
+  font-size: clamp(16px, 1.8vw, 19px);
+  color: var(--text-muted);
+  max-width: 640px;
+  margin: 0 auto 36px;
+  line-height: 1.55;
+}
+
+/* ─── Audience Toggle & Controls Row ───────────────────────────────────────── */
+.pricing-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .pricing-controls {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.audience-segmented-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 4px;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.audience-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.audience-toggle-btn:hover {
+  color: var(--text);
+}
+
+.audience-toggle-btn.active {
+  background: var(--cta);
+  color: var(--cta-text);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.audience-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #0E1A2E;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.collapse-all-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 0.2s ease;
+  font-family: inherit;
+}
+
+@media (min-width: 768px) {
+  .collapse-all-btn {
+    position: absolute;
+    right: 0;
+  }
+}
+
+.collapse-all-btn:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* ─── 2. Plan Cards Grid ───────────────────────────────────────────────────── */
+.plans-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .plans-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .plans-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+.plan-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .plan-card {
+    padding: 28px 24px;
+  }
+}
+
+/* Light mode subtle shadow */
+[data-theme="light"] .plan-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark mode step elevation */
+[data-theme="dark"] .plan-card {
+  background: var(--surface);
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  .plan-card:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Highlighted (Plus / Most Popular) plan */
+.plan-card.highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 8px 24px var(--accent-soft);
+}
+
+[data-theme="dark"] .plan-card.highlighted {
+  background: var(--surface-raised);
+}
+
+.plan-popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #0E1A2E;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 12px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.plan-card-header {
+  margin-bottom: 20px;
+}
+
+.plan-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  letter-spacing: -0.01em;
+}
+
+.plan-tagline {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  min-height: 42px;
+}
+
+.plan-tagline strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Price Block */
+.plan-price-block {
+  margin-bottom: 20px;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.plan-price-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.plan-price-amount {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.plan-price-unit {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.plan-price-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.plan-enterprise-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* CTAs inside Card */
+.plan-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  margin-bottom: 24px;
+  font-family: inherit;
+}
+
+.plan-cta-btn.primary {
+  background: var(--cta);
+  color: var(--cta-text);
+  border: 1px solid var(--cta);
+}
+
+.plan-cta-btn.primary:hover {
+  background: var(--cta-hover);
+  border-color: var(--cta-hover);
+}
+
+.plan-cta-btn.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.plan-cta-btn.secondary:hover {
+  border-color: var(--text-muted);
+  background: var(--accent-soft);
+}
+
+.plan-cta-bottom {
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+/* Feature Groups inside Card */
+.plan-feature-groups {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.plan-feature-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  width: 100%;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: var(--mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color 0.2s ease;
+}
+
+.plan-group-toggle:hover {
+  color: var(--text);
+}
+
+.plan-group-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.plan-group-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.plan-group-items {
+  list-style: none;
+  padding: 8px 0 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.2s ease;
+}
+
+.plan-group-items.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+}
+
+.plan-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.plan-feature-item.inherited {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.plan-feature-item.new-at-tier {
+  font-weight: 550;
+  color: var(--text);
+}
+
+.plan-check-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.plan-group-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--mono, monospace);
+  padding: 4px 0;
+}
+
+.pricing-footnote {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 16px;
+  margin-bottom: 48px;
+}
+
+/* ─── 3. On-Demand Products (Add-ons) ──────────────────────────────────────── */
+.addons-section {
+  padding: 48px 0 64px;
+}
+
+.addons-heading {
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.addons-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 860px) {
+  .addons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.addon-card {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.addon-card:hover {
+  border-color: var(--accent);
+}
+
+.addon-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.addon-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.addon-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addon-bullet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.addon-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.addon-cta-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ─── 4. Detailed Comparison Table ─────────────────────────────────────────── */
+.comparison-section {
+  padding: 64px 0 96px;
+}
+
+.comparison-heading {
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Mobile plan switcher tabs */
+.comparison-mobile-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .comparison-mobile-tabs {
+    display: none;
+  }
+}
+
+.comparison-mobile-tab-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.comparison-mobile-tab-btn.active {
+  background: var(--cta);
+  color: var(--cta-text);
+  border-color: var(--cta);
+  font-weight: 600;
+}
+
+/* Table Container & Sticky Elements */
+.comparison-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Sticky Header Row */
+.comparison-table thead th {
+  position: sticky;
+  top: 72px; /* Sticky offset matching nav height */
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  vertical-align: top;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .comparison-table thead th {
+  background: var(--surface-raised);
+}
+
+.comparison-th-feature {
+  width: 36%;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 220px;
+}
+
+@media (min-width: 768px) {
+  .comparison-th-feature {
+    position: sticky;
+    left: 0;
+    z-index: 12;
+    background: inherit;
+  }
+}
+
+.comparison-th-plan {
+  width: 16%;
+  text-align: center;
+  min-width: 130px;
+}
+
+.comparison-th-plan.highlighted {
+  background: var(--accent-soft);
+}
+
+.table-header-plan-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.table-header-plan-price {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-header-cta-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--cta);
+  color: var(--cta-text);
+  transition: opacity 0.2s ease;
+}
+
+.table-header-cta-btn:hover {
+  opacity: 0.9;
+}
+
+/* Category Section Header Row */
+.comparison-category-row th {
+  background: var(--surface-raised);
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+
+.comparison-category-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--mono, monospace);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.comparison-category-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: var(--sans, sans-serif);
+}
+
+/* Feature Data Rows */
+.comparison-feature-row {
+  transition: background 0.15s ease;
+}
+
+.comparison-feature-row:hover {
+  background: var(--accent-soft);
+}
+
+.comparison-feature-cell {
+  font-weight: 500;
+  color: var(--text);
+}
+
+@media (min-width: 768px) {
+  .comparison-feature-cell {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: inherit;
+  }
+}
+
+.comparison-feature-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+}
+
+.comparison-feature-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 3px;
+  display: block;
+}
+
+.comparison-value-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.comparison-value-cell.highlighted {
+  background: rgba(91, 214, 138, 0.03);
+}
+
+.val-check-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.val-dash {
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.val-text {
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.val-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--mono, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* ─── 5. FAQ Section ───────────────────────────────────────────────────────── */
+.pricing-faq-section {
+  padding: 64px 0 96px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pricing-faq-heading {
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  font-size: clamp(28px, 3.2vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.pricing-faq-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.pricing-faq-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.pricing-faq-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.pricing-faq-button:hover {
+  color: var(--accent);
+}
+
+.pricing-faq-chevron {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pricing-faq-button.open .pricing-faq-chevron {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.pricing-faq-answer {
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.pricing-faq-answer p {
+  padding: 0 0 20px 0;
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.pricing-faq-more {
+  text-align: center;
+  margin-top: 36px;
+}
+
+.pricing-faq-more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.pricing-faq-more-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* ─── Focus States ─────────────────────────────────────────────────────────── */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .plan-card:hover {
+    transform: none;
+  }
+}

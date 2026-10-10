@@ -1,11 +1,12 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 
 export default function SiteNav({ theme, toggleTheme, startFiling, loading = false }) {
   const navigate = useNavigate()
+  const location = useLocation()
 
   function handleAnchorNav(e, hash) {
-    if (window.location.pathname === '/') {
+    if (location.pathname === '/') {
       e.preventDefault()
       document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
     }
@@ -28,10 +29,10 @@ export default function SiteNav({ theme, toggleTheme, startFiling, loading = fal
         <ul className="nav-links">
           <li><a href="/#how" onClick={(e) => handleAnchorNav(e, '#how')}>How it works</a></li>
           <li><a href="/#analyze" onClick={(e) => handleAnchorNav(e, '#analyze')}>Statement AI</a></li>
-          <li><Link to="/for-cas">For CAs</Link></li>
-          <li><a href="/#pricing" onClick={(e) => handleAnchorNav(e, '#pricing')}>Pricing</a></li>
-          <li><Link to="/about">About</Link></li>
-          <li><Link to="/faq">FAQ</Link></li>
+          <li><Link to="/for-cas" className={location.pathname === '/for-cas' ? 'active' : ''}>For CAs</Link></li>
+          <li><Link to="/pricing" className={location.pathname === '/pricing' ? 'active' : ''}>Pricing</Link></li>
+          <li><Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link></li>
+          <li><Link to="/faq" className={location.pathname === '/faq' ? 'active' : ''}>FAQ</Link></li>
         </ul>
         <div className="nav-right">
           <button
