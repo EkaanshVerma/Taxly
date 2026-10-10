@@ -15,20 +15,20 @@ const allFaqItems = [
   {
     id: 'data-safety',
     q: "Is my data safe?",
-    a: "Your PAN, salary details, and documents are used only to generate your ITR XML. We don't sell or share your data with third parties. Bank statement analysis happens to flag items for your CA to review — it's never used for anything beyond your own filing.",
+    a: "Your PAN, salary details, and documents are used only to generate your ITR XML. We don't sell or share your data with third parties. Bank statement analysis happens to flag items for your CA to review — it's never used for anything beyond your own filing. All data is encrypted in transit and at rest with AES-256.",
     topics: ['popular', 'security']
   },
   {
     id: 'two-form16',
     q: "What if I have two Form 16s from switching jobs?",
-    a: "Upload both. Taxly merges them automatically and aggregates your TDS across both employers — this is one of the most common places manual filing goes wrong.",
+    a: "Upload both. Taxly merges them automatically and aggregates your TDS across both employers — calculating salary, standard deductions, and tax slabs seamlessly across both jobs. This is one of the most common places manual filing results in demand notices.",
     topics: ['popular', 'product']
   },
   {
     id: 'itd-submission',
     q: "Do you actually submit my return to the income tax department?",
-    a: "Not yet. Taxly generates your ITR XML, ready to upload. You, or your CA on the verified tier, submit and e-verify it on the official portal. We're not a registered e-Return Intermediary at this stage.",
-    topics: ['product']
+    a: "Not yet. Taxly generates your ITR XML / JSON, completely structured and validated against ITD schema. You, or your assigned CA on the verified tier, upload and e-verify it directly on the official income tax portal. We're not a registered e-Return Intermediary at this stage.",
+    topics: ['popular', 'product']
   },
   {
     id: 'pricing-tiers',
@@ -40,7 +40,13 @@ const allFaqItems = [
     id: 'crypto-nri',
     q: "Does Taxly handle crypto, NRI returns, or capital gains?",
     a: "Yes — crypto at the flat rate under Section 115BBH, NRI returns with DTAA relief for six treaty countries, and capital gains on equity, debt funds, and property, including Section 54 reinvestment and the January 2018 grandfathering rule for equity LTCG.",
-    topics: ['product', 'gains']
+    topics: ['popular', 'product', 'gains']
+  },
+  {
+    id: 'regime-compare',
+    q: "How does Taxly compare the Old vs New Tax Regime?",
+    a: "Taxly calculates your exact liability under both regimes concurrently. It tests your eligible Chapter VI-A deductions, HRA, home loan interest, and NPS contributions against the lower baseline tax slabs of the New Regime, highlighting the exact rupee difference so you pick the optimal regime.",
+    topics: ['popular', 'product']
   },
   {
     id: 'broker-import',
@@ -49,10 +55,64 @@ const allFaqItems = [
     topics: ['product', 'gains']
   },
   {
+    id: 'foreign-stocks',
+    q: "Can I declare foreign stocks, RSUs, and US ESOPs?",
+    a: "Yes. Taxly handles foreign asset disclosures under Schedule FA (Foreign Assets), converts USD capital gains using SBI TT Telegraphic Buying Rates as mandated by CBDT rule 115, and computes foreign tax credit relief under Section 90/91.",
+    topics: ['gains']
+  },
+  {
+    id: 'reconcile-ais',
+    q: "How do you reconcile Form 26AS, AIS, and Form 16?",
+    a: "Taxly automatically cross-references reported TDS and incomes between your Form 16, your Annual Information Statement (AIS), and Form 26AS. If there is a mismatch — such as an employer deducting TDS under the wrong TAN or undisclosed savings interest — Taxly alerts you before filing.",
+    topics: ['product']
+  },
+  {
+    id: 'hra-rules',
+    q: "How does HRA calculation work if I live in a metro city?",
+    a: "Taxly computes HRA exemptions under Section 10(13A) using the three statutory rules: actual HRA received, 50% of basic salary (for Delhi, Mumbai, Kolkata, Chennai) or 40% (non-metro), and actual rent paid minus 10% of basic salary. You only need to enter monthly rent and city.",
+    topics: ['product']
+  },
+  {
+    id: 'notice-support',
+    q: "What happens if I receive an Income Tax notice later?",
+    a: "If you filed on the CA-verified or Advisory tier, your assigned CA helps you draft the response to any routine scrutiny or Section 143(1) intimation. If the notice stems from an engine arithmetic miscalculation, we handle the revised filing and penalty costs directly under our guarantee.",
+    topics: ['product', 'security']
+  },
+  {
+    id: 'portal-credentials',
+    q: "Do you store my net banking passwords or IT portal credentials?",
+    a: "Never. We do not ask for, store, or log your Income Tax Department login password or any banking credentials. Statement uploads are read purely for transaction classification and are scrubbed of unneeded personal identifiers.",
+    topics: ['security']
+  },
+  {
+    id: 'data-retention',
+    q: "How long is my tax data retained on your servers?",
+    a: "By default, your data is retained so you can access previous year ITR XMLs and calculations. However, you can permanently wipe all uploaded documents, bank statements, and derived records from your settings dashboard at any time.",
+    topics: ['security']
+  },
+  {
     id: 'hidden-fees',
     q: "Are there any hidden fees or recurring subscriptions?",
     a: "None. All pricing is flat per financial year filed. There are no recurring auto-debits, surprise export charges, or hidden platform fees.",
     topics: ['pricing']
+  },
+  {
+    id: 'upgrade-tier',
+    q: "Can I upgrade to CA verification after starting with self-file?",
+    a: "Yes. You can start on the self-file tier, and if your return turns out more complicated than expected (e.g., unexpected capital gains or mismatched AIS entries), you can upgrade to CA-verified anytime before downloading your XML.",
+    topics: ['pricing']
+  },
+  {
+    id: 'turnaround-time',
+    q: "What is the turnaround time for CA verification?",
+    a: "CA verification typically takes under 24 hours during standard tax season. If discrepancies or missing documentation are flagged, your CA will reach out directly with specific requests through your dashboard.",
+    topics: ['pricing']
+  },
+  {
+    id: 'section-54',
+    q: "How does Section 54 property capital gains exemption work in Taxly?",
+    a: "When you sell residential property, Taxly allows you to apply Section 54 and Section 54EC deductions by accounting for investments in a new residential property or capital gains bonds (NHAI/REC), properly adjusting indexed acquisition costs where applicable.",
+    topics: ['gains']
   }
 ]
 
