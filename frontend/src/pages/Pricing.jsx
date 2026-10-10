@@ -267,7 +267,20 @@ export default function Pricing() {
               className="collapse-all-btn"
               aria-label={allExpanded ? 'Collapse all feature groups' : 'Expand all feature groups'}
             >
-              {allExpanded ? 'Collapse all' : 'Expand all'}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ transform: allExpanded ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s ease' }}
+              >
+                <polyline points="18 15 12 9 6 15" />
+              </svg>
+              <span>{allExpanded ? 'Collapse all' : 'Expand all'}</span>
             </button>
           </div>
         </section>

@@ -6,6 +6,10 @@
 
 .pricing-page {
   background-color: var(--bg);
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 44px 44px;
   color: var(--text);
   min-height: 100vh;
   font-family: var(--sans, 'Inter', system-ui, sans-serif);
@@ -13,6 +17,12 @@
   overflow-x: clip;
   overflow-y: visible;
   position: relative;
+}
+
+[data-theme="light"].pricing-page {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
 }
 
 .pricing-page.home-page {
@@ -57,77 +67,76 @@
   }
 }
 
-/* ─── 1. Header & Hero ─────────────────────────────────────────────────────── */
+/* ─── 1. Header & Hero (CodeRabbit Layout & Spacing) ───────────────────────── */
 .pricing-header {
-  text-align: center;
-  padding-top: 56px;
-  padding-bottom: 24px;
+  text-align: left;
+  padding-top: 40px;
+  padding-bottom: 0px;
 }
 
 @media (min-width: 768px) {
   .pricing-header {
-    padding-top: 80px;
-    padding-bottom: 32px;
+    padding-top: 48px;
+    padding-bottom: 0px;
   }
 }
 
 .pricing-title {
   font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
-  font-size: clamp(36px, 5vw, 64px);
+  font-size: clamp(34px, 4.2vw, 50px);
   font-weight: 700;
   letter-spacing: -0.03em;
-  line-height: 1.05;
+  line-height: 1.1;
   color: var(--text);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  text-align: left;
 }
 
 .pricing-subtitle {
-  font-size: clamp(16px, 1.8vw, 19px);
+  font-size: 15.5px;
   color: var(--text-muted);
-  max-width: 640px;
-  margin: 0 auto 36px;
+  max-width: 580px;
+  margin: 0 0 32px 0;
   line-height: 1.55;
+  text-align: left;
 }
 
 /* ─── Audience Toggle & Controls Row ───────────────────────────────────────── */
 .pricing-controls {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 48px;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
   position: relative;
-}
-
-@media (min-width: 768px) {
-  .pricing-controls {
-    flex-direction: row;
-    justify-content: center;
-  }
+  gap: 16px;
 }
 
 .audience-segmented-toggle {
   display: inline-flex;
   align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 4px;
+}
+
+[data-theme="light"] .audience-segmented-toggle {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 9999px;
-  padding: 4px;
-  gap: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .audience-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
-  border-radius: 9999px;
+  padding: 7px 18px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -139,46 +148,51 @@
 }
 
 .audience-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+[data-theme="light"] .audience-toggle-btn.active {
   background: var(--cta);
   color: var(--cta-text);
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .audience-badge {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #0E1A2E;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  border-radius: 4px;
+  background: rgba(46, 204, 113, 0.2);
+  color: #4ade80;
+  letter-spacing: 0.02em;
 }
 
 .collapse-all-btn {
-  background: transparent;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: color 0.2s ease;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   font-family: inherit;
 }
 
-@media (min-width: 768px) {
-  .collapse-all-btn {
-    position: absolute;
-    right: 0;
-  }
+[data-theme="light"] .collapse-all-btn {
+  background: var(--surface);
 }
 
 .collapse-all-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
-  text-decoration: underline;
+  border-color: rgba(255, 255, 255, 0.18);
+  text-decoration: none;
 }
 
 /* ─── 2. Plan Cards Grid ───────────────────────────────────────────────────── */
