@@ -3,13 +3,23 @@ import { Link, useNavigate } from 'react-router-dom'
 import { createSession } from '../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
 import TaxConstellationOrb from '../components/TaxConstellationOrb'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 import './Home.css'
 
 export default function Home() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const [theme, setTheme] = useState(() => localStorage.getItem('taxly_theme') || 'dark')
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('theme')
+      if (p === 'light' || p === 'dark') return p
+      const saved = localStorage.getItem('taxly_theme')
+      if (saved) return saved
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+    return 'dark'
+  })
 
   const toggleTheme = useCallback(() => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -34,12 +44,10 @@ export default function Home() {
 
   // ── Background color sync & Theme application ─────────────────────────────
   useEffect(() => {
-    const prevBg = document.body.style.backgroundColor
     document.documentElement.setAttribute('data-theme', theme)
-    document.body.style.backgroundColor = theme === 'dark' ? '#0A0E14' : '#F8FAF6'
-    return () => {
-      document.body.style.backgroundColor = prevBg
-    }
+    document.documentElement.style.colorScheme = theme
+    document.body.style.backgroundColor = 'var(--bg)'
+    document.body.style.color = 'var(--text)'
   }, [theme])
 
   // ── 1. Reveal on scroll ────────────────────────────────────────────────────
@@ -375,12 +383,81 @@ export default function Home() {
   const allResolved = resolvedCount === initialFlags.length
   const openCount = initialFlags.length - resolvedCount
 
+  const [activePersona, setActivePersona] = useState('Salaried')
+  const [showSampleModal, setShowSampleModal] = useState(false)
+  const highlightTimerRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!showSampleModal) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowSampleModal(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showSampleModal])
+
+  const handlePersonaSelect = (persona) => {
+    setActivePersona(persona)
+
+    if (persona === 'Salaried') {
+      const el = document.getElementById('how')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      return
+    }
+
+    const engineEl = document.getElementById('engine')
+    if (engineEl) {
+      engineEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current)
+    }
+    document.querySelectorAll('.eng-c.eng-c-flash').forEach((card) => {
+      card.classList.remove('eng-c-flash')
+    })
+
+    const tickMap = {
+      'Capital gains': 'ITR-1 · ITR-2',
+      'Freelancer': 'ITR-3 · ITR-4',
+      'NRI': 'RESIDENCY',
+      'Crypto': 'NEWER HEADS',
+    }
+
+    const tickTarget = tickMap[persona]
+    if (!tickTarget) return
+
+    const cards = document.querySelectorAll('#engine .eng-c')
+    let targetCard = null
+    cards.forEach((card) => {
+      const tick = card.querySelector('.tick')
+      if (tick && tick.textContent.trim().includes(tickTarget)) {
+        targetCard = card
+      }
+    })
+
+    if (targetCard) {
+      targetCard.classList.add('eng-c-flash')
+      highlightTimerRef.current = setTimeout(() => {
+        targetCard.classList.remove('eng-c-flash')
+      }, 1500)
+    }
+  }
+
   return (
     <div className={`home-page theme-${theme}`} data-theme={theme}>
       {/* ══ ANNOUNCE ══ */}
       <div className="announce">
-        <b>Filing season is open for AY 2025–26.</b>
-        <a href="#pricing">See what it costs →</a>
+        <b>{TAX_YEAR_CONFIG.announcementText}</b>
+        <a href="#pricing">{TAX_YEAR_CONFIG.announcementCta}</a>
       </div>
 
       {/* ══ NAV ══ */}
@@ -405,8 +482,9 @@ export default function Home() {
             <button
               className="theme-toggle"
               onClick={toggleTheme}
-              aria-label="Toggle light and dark mode"
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-pressed={theme === 'dark'}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
               {theme === 'dark' ? (
                 <svg className="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
@@ -421,7 +499,8 @@ export default function Home() {
             </button>
             <Link to="/login" className="btn btn-ghost">Log In</Link>
             <button onClick={startFiling} className="btn btn-fill" disabled={loading}>
-              {loading ? 'Starting...' : 'Start a free trial →'}
+              <span className="nav-btn-text-full">{loading ? 'Starting...' : 'Start a free trial →'}</span>
+              <span className="nav-btn-text-short">{loading ? 'Starting...' : 'Start free →'}</span>
             </button>
           </div>
         </div>
@@ -558,6 +637,17 @@ export default function Home() {
                     </div>
                     <span className="pill pill-run">CONFIRM</span>
                   </div>
+
+                  <a
+                    href="#sample-output"
+                    className="sample-link"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setShowSampleModal(true)
+                    }}
+                  >
+                    Don't have your documents handy? See a sample output →
+                  </a>
                 </div>
               </div>
             </div>
@@ -703,6 +793,43 @@ export default function Home() {
               onClick={() => setRailPaused((p) => !p)}
             >
               {railPaused ? '▶' : '❚❚'}
+            </button>
+          </div>
+        </div>
+
+        {/* ══ PERSONA STRIP ══ */}
+        <div className="wrap persona-strip rv">
+          <span className="persona-label">I am</span>
+          <div className="persona-tabs">
+            <button
+              className={`ptab ${activePersona === 'Salaried' ? 'ptab-active on' : ''}`}
+              onClick={() => handlePersonaSelect('Salaried')}
+            >
+              Salaried
+            </button>
+            <button
+              className={`ptab ${activePersona === 'Capital gains' ? 'ptab-active on' : ''}`}
+              onClick={() => handlePersonaSelect('Capital gains')}
+            >
+              Capital gains
+            </button>
+            <button
+              className={`ptab ${activePersona === 'Freelancer' ? 'ptab-active on' : ''}`}
+              onClick={() => handlePersonaSelect('Freelancer')}
+            >
+              Freelancer
+            </button>
+            <button
+              className={`ptab ${activePersona === 'NRI' ? 'ptab-active on' : ''}`}
+              onClick={() => handlePersonaSelect('NRI')}
+            >
+              NRI
+            </button>
+            <button
+              className={`ptab ${activePersona === 'Crypto' ? 'ptab-active on' : ''}`}
+              onClick={() => handlePersonaSelect('Crypto')}
+            >
+              Crypto
             </button>
           </div>
         </div>
@@ -1382,6 +1509,52 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ══ TRUST ══ */}
+      <section id="trust" style={{ borderTop: '1px solid var(--line-soft)' }}>
+        <div className="wrap">
+          <div className="sec-head rv">
+            <div className="sec-num"><b>Trust</b> How we handle your data</div>
+            <h2>Your PAN is not <em>our product.</em></h2>
+          </div>
+          <div className="trust-grid rv">
+            <div className="eng-c">
+              <span className="tick">STORAGE</span>
+              <h4>Encrypted at rest</h4>
+              <p>
+                Your documents and filing data are stored in Supabase with row-level
+                security — accessible only to your account and the CA assigned to your
+                filing.
+              </p>
+            </div>
+            <div className="eng-c">
+              <span className="tick">USAGE</span>
+              <h4>Never sold, never shared</h4>
+              <p>
+                Your data is used exclusively to prepare your ITR. We don't sell it,
+                rent it, or use it for anything beyond the filing you asked for.
+              </p>
+            </div>
+            <div className="eng-c">
+              <span className="tick">AI SCOPE</span>
+              <h4>AI reads. It doesn't decide.</h4>
+              <p>
+                Language models handle conversation and document parsing. Every number
+                in your return comes from deterministic code, and every flagged deduction
+                is checked by a human before it's accepted.
+              </p>
+            </div>
+            <div className="eng-c">
+              <span className="tick">ACCOUNTABILITY</span>
+              <h4>Mistakes are on us</h4>
+              <p>
+                If our calculation engine causes a defect notice, we file your revised
+                return at no cost and cover any interest directly caused by our error.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ══ FOOTER ══ */}
       <footer>
         <div className="wrap">
@@ -1432,6 +1605,74 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* ══ SAMPLE OUTPUT MODAL ══ */}
+      {showSampleModal && (
+        <div
+          className="sample-modal-overlay"
+          onClick={() => setShowSampleModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="demo sample-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="demo-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="pill pill-idle">SAMPLE — not your data</span>
+              </div>
+              <button
+                className="sample-modal-close"
+                onClick={() => setShowSampleModal(false)}
+                aria-label="Close sample modal"
+              >
+                ×
+              </button>
+            </div>
+            <div className="demo-body sample-modal-body">
+              <div className="sample-summary-head">
+                <h3>Tax Summary</h3>
+                <p>AY 2025–26 · Form 16 & deductions reconciled</p>
+              </div>
+              <div className="sample-breakdown-list">
+                <div className="sample-breakdown-row">
+                  <span>Gross salary</span>
+                  <span className="amt">₹18,40,000</span>
+                </div>
+                <div className="sample-breakdown-row">
+                  <span>Standard deduction</span>
+                  <span className="amt neg">–₹75,000</span>
+                </div>
+                <div className="sample-breakdown-row">
+                  <span>80C deductions</span>
+                  <span className="amt neg">–₹1,50,000</span>
+                </div>
+                <div className="sample-breakdown-row">
+                  <span>HRA exemption</span>
+                  <span className="amt neg">–₹1,84,000</span>
+                </div>
+                <div className="sample-breakdown-row subtotal">
+                  <span>Net taxable income</span>
+                  <span className="amt">₹14,31,000</span>
+                </div>
+                <div className="sample-breakdown-row">
+                  <span>Tax payable</span>
+                  <span className="amt">₹1,54,200</span>
+                </div>
+                <div className="sample-breakdown-row">
+                  <span>TDS already paid</span>
+                  <span className="amt neg">–₹1,82,400</span>
+                </div>
+                <div className="sample-breakdown-row final-row">
+                  <span>Refund due</span>
+                  <span className="amt refund">₹28,200</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
