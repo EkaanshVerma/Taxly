@@ -72,36 +72,33 @@ export default function Home() {
   // ── 2. Per-character rolling wave headline rotator ────────────────────────
   const rollRef = useRef(null)
   const rollSrRef = useRef(null)
+
   useEffect(() => {
     const root = rollRef.current
     const sr = rollSrRef.current
     if (!root || !sr) return
 
-    const PHRASES = [
-      'catching deductions.',
-      'proving claims.',
-      'flagging risks.',
-      'optimizing refunds.'
-    ]
+    const PHRASES = ['reading it.', 'flagging it.', 'verifying it.']
     const STAGGER = 12
     const DUR = 210
     const PERIOD = 2500
     const EASE = 'cubic-bezier(.25,1,.5,1)'
 
-    // tint colours matching the spec
-    const UP   = '#7DBFA0'
+    // Tint colours matching the spec
+    const UP = '#7DBFA0'
     const DOWN = '#E0877A'
-    const WHITE = getComputedStyle(document.documentElement).getPropertyValue('--ink-brand').trim() || '#EDF1F5'
+    const getTargetColor = () => {
+      const cs = window.getComputedStyle(root)
+      return cs.color || '#EDF1F5'
+    }
 
     if (reduceMotion) {
       sr.textContent = PHRASES[0]
-      // plain static render
       root.textContent = ''
       for (let i = 0; i < PHRASES[0].length; i++) {
         const c = document.createElement('span')
         c.className = 'roll-cell'
         c.setAttribute('aria-hidden', 'true')
-        c.style.width = ''
         const g = document.createElement('span')
         g.className = 'roll-g'
         g.textContent = PHRASES[0][i]
@@ -111,16 +108,31 @@ export default function Home() {
       return
     }
 
-    // glyph width cache (measured in px via a hidden probe)
+    // Hidden probe element used to measure character widths accurately
+    // Attached to root's parent container so it inherits font-family, font-size, font-weight, letter-spacing
     const probe = document.createElement('span')
-    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:0;font:inherit'
-    document.body.appendChild(probe)
+    probe.setAttribute('aria-hidden', 'true')
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:0;pointer-events:none;'
+    const parentContainer = root.parentElement || document.body
+    parentContainer.appendChild(probe)
+
     const wcache = {}
-    function widthPx(ch) {
+    function widthEm(ch) {
       if (ch === '') return 0
       if (wcache[ch] != null) return wcache[ch]
+      const cs = window.getComputedStyle(root)
+      probe.style.fontFamily = cs.fontFamily
+      probe.style.fontSize = cs.fontSize
+      probe.style.fontWeight = cs.fontWeight
+      probe.style.fontStyle = cs.fontStyle
+      probe.style.letterSpacing = cs.letterSpacing
       probe.textContent = ch
-      return (wcache[ch] = probe.getBoundingClientRect().width)
+      const fs = parseFloat(cs.fontSize) || 16
+      const rectWidth = probe.getBoundingClientRect().width
+      const em = rectWidth / fs
+      // Safety fallback to prevent 0 or collapsed width
+      const safeEm = em > 0.05 ? em : (ch === ' ' ? 0.32 : 0.55)
+      return (wcache[ch] = safeEm)
     }
 
     function makeGlyph(ch, cls) {
@@ -136,6 +148,7 @@ export default function Home() {
       const from = current
       const N = Math.max(from.length, to.length)
       const anims = []
+      const white = getTargetColor()
       root.textContent = ''
 
       for (let i = 0; i < N; i++) {
@@ -144,7 +157,7 @@ export default function Home() {
         const cell = document.createElement('span')
         cell.className = 'roll-cell'
         cell.setAttribute('aria-hidden', 'true')
-        cell.style.width = widthPx(oc) + 'px'
+        cell.style.width = widthEm(oc) + 'em'
 
         const o = makeGlyph(oc, 'old')
         const n = makeGlyph(nc, 'new')
@@ -166,11 +179,11 @@ export default function Home() {
           { ...base, easing: EASE }
         ))
         anims.push(n.animate(
-          [{ color: tint }, { color: WHITE }],
+          [{ color: tint }, { color: white }],
           { ...base, easing: 'linear' }
         ))
         anims.push(cell.animate(
-          [{ width: widthPx(oc) + 'px' }, { width: widthPx(nc) + 'px' }],
+          [{ width: widthEm(oc) + 'em' }, { width: widthEm(nc) + 'em' }],
           { ...base, easing: EASE }
         ))
       }
@@ -182,20 +195,19 @@ export default function Home() {
         root.querySelectorAll('.roll-cell').forEach((c, i) => {
           const old = c.querySelector('.old')
           if (old) old.remove()
-          c.style.width = widthPx(to[i] || '') + 'px'
+          c.style.width = widthEm(to[i] || '') + 'em'
         })
         anims.forEach(a => { try { a.cancel() } catch (e) {} })
       }).catch(() => {})
     }
 
-    // initial static render
     function init() {
       root.textContent = ''
       for (let i = 0; i < current.length; i++) {
         const c = document.createElement('span')
         c.className = 'roll-cell'
         c.setAttribute('aria-hidden', 'true')
-        c.style.width = widthPx(current[i]) + 'px'
+        c.style.width = widthEm(current[i]) + 'em'
         c.appendChild(makeGlyph(current[i], 'new'))
         root.appendChild(c)
       }
@@ -212,9 +224,22 @@ export default function Home() {
       swap(PHRASES[idx])
     }
 
+    init()
+
+    const onResize = () => {
+      for (const k in wcache) delete wcache[k]
+      root.querySelectorAll('.roll-cell').forEach((c, i) => {
+        c.style.width = widthEm(current[i] || '') + 'em'
+      })
+    }
+    window.addEventListener('resize', onResize)
+
     const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()
     ready.then(() => {
-      init()
+      for (const k in wcache) delete wcache[k]
+      root.querySelectorAll('.roll-cell').forEach((c, i) => {
+        c.style.width = widthEm(current[i] || '') + 'em'
+      })
       initTimeout = setTimeout(() => {
         tick()
         intervalId = setInterval(tick, PERIOD)
@@ -224,6 +249,7 @@ export default function Home() {
     return () => {
       clearTimeout(initTimeout)
       clearInterval(intervalId)
+      window.removeEventListener('resize', onResize)
       if (probe.parentNode) probe.parentNode.removeChild(probe)
     }
   }, [reduceMotion])
