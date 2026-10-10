@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createSession } from '../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
-import TaxConstellationOrb from '../components/TaxConstellationOrb'
+import TrustedContextShowcase from '../components/TrustedContextShowcase'
 import { TAX_YEAR_CONFIG } from '../config/taxYear'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
@@ -1211,11 +1211,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ SCROLL-PINNED CONTEXT ══ */}
-      <section className="ctx" id="context" style={{ padding: 0 }}>
-        <div className="wrap ctx-head rv">
-          <div className="sec-tag" style={{ color: '#10B981', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
-            SHARED INTELLIGENCE
+      {/* ══ SCROLL-PINNED CONTEXT / TRUSTED CONTEXT SHOWCASE ══ */}
+      <section className="ctx" id="context" style={{ padding: '80px 0 60px' }}>
+        <div className="wrap ctx-head rv" style={{ marginBottom: '40px' }}>
+          <div className="sec-tag" style={{ color: '#F04006', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
+            TRUSTED CONTEXT
           </div>
           <h2>Best-in-class context. <em>Every source, one return.</em></h2>
           <p className="sec-sub">
@@ -1224,27 +1224,8 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="wrap ctx-stage">
-          <div className="ctx-list" id="ctxList" ref={ctxListRef}>
-            <div className="ctx-rail"></div>
-            <div className="ctx-rail-fill" id="railFill" ref={railFillRef}></div>
-
-            {ctxItems.map((it, idx) => (
-              <div
-                key={it.id}
-                className={`ctx-item ${activeCtx === idx ? 'on' : ''}`}
-                data-node={it.id}
-                onClick={() => selectCtx(idx)}
-              >
-                <h4>{it.title}</h4>
-                <p>{it.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="ctx-visual">
-            <TaxConstellationOrb activeIdx={activeCtx} />
-          </div>
+        <div className="wrap" style={{ padding: '0 24px' }}>
+          <TrustedContextShowcase initialTab={4} />
         </div>
       </section>
 
