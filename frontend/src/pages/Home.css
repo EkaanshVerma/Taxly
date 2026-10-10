@@ -399,13 +399,13 @@
 .home-page .h1-rot-line {
   display: block;
   white-space: nowrap;
-  color: var(--ink-brand);
+  color: #FFFFFF;
   margin-top: 4px;
 }
 
 .home-page .h1-static {
   display: inline;
-  color: var(--ink-brand);
+  color: #FFFFFF;
 }
 
 .home-page .h1-rot {
@@ -436,7 +436,14 @@
   top: 0;
   line-height: 1.18;
   white-space: pre;
+  color: #FFFFFF;
   will-change: transform, color;
+}
+
+.home-page.theme-light .h1-rot-line,
+.home-page.theme-light .h1-static,
+.home-page.theme-light .roll-g {
+  color: #0E1A2E;
 }
 
 .home-page .sr-only {
@@ -450,7 +457,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home-page .roll-g {
-    color: var(--ink-brand) !important;
+    color: #FFFFFF !important;
+  }
+  .home-page.theme-light .roll-g {
+    color: #0E1A2E !important;
   }
 }
 

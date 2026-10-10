@@ -78,19 +78,25 @@ export default function Home() {
     const sr = rollSrRef.current
     if (!root || !sr) return
 
-    const PHRASES = ['reading it.', 'flagging it.', 'verifying it.']
+    const PHRASES = [
+      'reading it.',
+      'catching deductions.',
+      'matching your TDS.',
+      'flagging mismatches.',
+      'proving HRA claims.',
+      'picking the regime.',
+      'verifying the verdict.',
+      'getting CA sign-off.'
+    ]
     const STAGGER = 12
     const DUR = 210
     const PERIOD = 2500
     const EASE = 'cubic-bezier(.25,1,.5,1)'
 
-    // Tint colours matching the spec
-    const UP = '#7DBFA0'
-    const DOWN = '#E0877A'
-    const getTargetColor = () => {
-      const cs = window.getComputedStyle(root)
-      return cs.color || '#EDF1F5'
-    }
+    // Taxly brand animation colors: signature emerald green and bright cyan-teal (no orange)
+    const UP = '#5BD68A'
+    const DOWN = '#2DD4BF'
+    const getTargetColor = () => (theme === 'light' ? '#0E1A2E' : '#FFFFFF')
 
     if (reduceMotion) {
       sr.textContent = PHRASES[0]
@@ -252,7 +258,7 @@ export default function Home() {
       window.removeEventListener('resize', onResize)
       if (probe.parentNode) probe.parentNode.removeChild(probe)
     }
-  }, [reduceMotion])
+  }, [reduceMotion, theme])
 
   // ── 3. Hero Rail Carousel ──────────────────────────────────────────────────
   const [railIndex, setRailIndex] = useState(0)
