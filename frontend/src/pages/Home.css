@@ -411,28 +411,46 @@
 .home-page .h1-rot {
   display: inline;
   position: relative;
-  color: var(--ink-brand);
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
-.home-page .sc-char {
-  display: inline;
+/* ── rolling word container ── */
+.home-page .roll {
+  display: inline-block;
+  white-space: pre;
+  vertical-align: bottom;
 }
 
-.home-page .sc-char.glitch {
-  color: var(--green);
-  opacity: 0.88;
+.home-page .roll-cell {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  height: 1.18em;
+  vertical-align: bottom;
+  white-space: pre;
 }
 
-.home-page .sc-char.settled {
-  color: var(--ink-brand);
+.home-page .roll-g {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1.18;
+  white-space: pre;
+  will-change: transform, color;
+}
+
+.home-page .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-page .h1-rot .sc-char.glitch {
-    color: var(--ink-brand);
-    text-shadow: none;
+  .home-page .roll-g {
+    color: var(--ink-brand) !important;
   }
 }
 

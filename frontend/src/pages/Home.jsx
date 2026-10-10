@@ -69,115 +69,162 @@ export default function Home() {
     }
   }, [reduceMotion])
 
-  // ── 2. Text scramble on hero — smooth CodeRabbit style (two words after It's) ────
-  const scrambleRef = useRef(null)
+  // ── 2. Per-character rolling wave headline rotator ────────────────────────
+  const rollRef = useRef(null)
+  const rollSrRef = useRef(null)
   useEffect(() => {
-    const el = scrambleRef.current
-    if (!el) return
+    const root = rollRef.current
+    const sr = rollSrRef.current
+    if (!root || !sr) return
 
-    const phrases = [
+    const PHRASES = [
       'catching deductions.',
       'proving claims.',
       'flagging risks.',
       'optimizing refunds.'
     ]
+    const STAGGER = 12
+    const DUR = 210
+    const PERIOD = 2500
+    const EASE = 'cubic-bezier(.25,1,.5,1)'
+
+    // tint colours matching the spec
+    const UP   = '#7DBFA0'
+    const DOWN = '#E0877A'
+    const WHITE = getComputedStyle(document.documentElement).getPropertyValue('--ink-brand').trim() || '#EDF1F5'
 
     if (reduceMotion) {
-      el.textContent = phrases[0]
+      sr.textContent = PHRASES[0]
+      // plain static render
+      root.textContent = ''
+      for (let i = 0; i < PHRASES[0].length; i++) {
+        const c = document.createElement('span')
+        c.className = 'roll-cell'
+        c.setAttribute('aria-hidden', 'true')
+        c.style.width = ''
+        const g = document.createElement('span')
+        g.className = 'roll-g'
+        g.textContent = PHRASES[0][i]
+        c.appendChild(g)
+        root.appendChild(c)
+      }
       return
     }
 
-    class TextScramble {
-      constructor(targetEl) {
-        this.el = targetEl
-        this.chars = 'abcdefghijklmnopqrstuvwxyz'
-        this.update = this.update.bind(this)
+    // glyph width cache (measured in px via a hidden probe)
+    const probe = document.createElement('span')
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:0;font:inherit'
+    document.body.appendChild(probe)
+    const wcache = {}
+    function widthPx(ch) {
+      if (ch === '') return 0
+      if (wcache[ch] != null) return wcache[ch]
+      probe.textContent = ch
+      return (wcache[ch] = probe.getBoundingClientRect().width)
+    }
+
+    function makeGlyph(ch, cls) {
+      const s = document.createElement('span')
+      s.className = 'roll-g ' + cls
+      s.textContent = ch
+      return s
+    }
+
+    let current = PHRASES[0]
+
+    function swap(to) {
+      const from = current
+      const N = Math.max(from.length, to.length)
+      const anims = []
+      root.textContent = ''
+
+      for (let i = 0; i < N; i++) {
+        const oc = from[i] || ''
+        const nc = to[i] || ''
+        const cell = document.createElement('span')
+        cell.className = 'roll-cell'
+        cell.setAttribute('aria-hidden', 'true')
+        cell.style.width = widthPx(oc) + 'px'
+
+        const o = makeGlyph(oc, 'old')
+        const n = makeGlyph(nc, 'new')
+        cell.appendChild(o)
+        cell.appendChild(n)
+        root.appendChild(cell)
+
+        const down = (i % 3 === 1)
+        const tint = down ? DOWN : UP
+        const delay = i * STAGGER
+        const base = { duration: DUR, delay, fill: 'both' }
+
+        anims.push(o.animate(
+          [{ transform: 'translateY(0)' }, { transform: `translateY(${down ? '100%' : '-100%'})` }],
+          { ...base, easing: EASE }
+        ))
+        anims.push(n.animate(
+          [{ transform: `translateY(${down ? '-100%' : '100%'})` }, { transform: 'translateY(0)' }],
+          { ...base, easing: EASE }
+        ))
+        anims.push(n.animate(
+          [{ color: tint }, { color: WHITE }],
+          { ...base, easing: 'linear' }
+        ))
+        anims.push(cell.animate(
+          [{ width: widthPx(oc) + 'px' }, { width: widthPx(nc) + 'px' }],
+          { ...base, easing: EASE }
+        ))
       }
 
-      setText(newText) {
-        const oldText = this.el.textContent || ''
-        const length = Math.max(oldText.length, newText.length)
-        const promise = new Promise((resolve) => {
-          this.resolve = resolve
+      current = to
+      sr.textContent = to
+
+      Promise.all(anims.map(a => a.finished)).then(() => {
+        root.querySelectorAll('.roll-cell').forEach((c, i) => {
+          const old = c.querySelector('.old')
+          if (old) old.remove()
+          c.style.width = widthPx(to[i] || '') + 'px'
         })
-        this.queue = []
-
-        for (let i = 0; i < length; i++) {
-          const from = oldText[i] || ''
-          const to = newText[i] || ''
-          const start = Math.floor(i * 2.4)
-          const end = start + 14 + Math.floor(Math.random() * 8)
-          this.queue.push({ from, to, start, end, char: '' })
-        }
-
-        cancelAnimationFrame(this.frameReq)
-        this.frame = 0
-        this.update()
-        return promise
-      }
-
-      update() {
-        let output = ''
-        let complete = 0
-
-        for (let i = 0; i < this.queue.length; i++) {
-          let { from, to, start, end, char } = this.queue[i]
-          if (this.frame >= end) {
-            complete++
-            output += to
-          } else if (this.frame >= start) {
-            if (to === ' ' || from === ' ') {
-              output += ' '
-            } else if (to === '.' || from === '.') {
-              output += '.'
-            } else {
-              if (!char || Math.random() < 0.3) {
-                char = this.chars[Math.floor(Math.random() * this.chars.length)]
-                this.queue[i].char = char
-              }
-              output += `<span class="sc-char glitch">${char}</span>`
-            }
-          } else {
-            output += from
-          }
-        }
-
-        this.el.innerHTML = output
-
-        if (complete === this.queue.length) {
-          if (this.resolve) this.resolve()
-        } else {
-          this.frameReq = requestAnimationFrame(this.update)
-          this.frame++
-        }
-      }
-
-      destroy() {
-        cancelAnimationFrame(this.frameReq)
-      }
+        anims.forEach(a => { try { a.cancel() } catch (e) {} })
+      }).catch(() => {})
     }
 
-    const fx = new TextScramble(el)
+    // initial static render
+    function init() {
+      root.textContent = ''
+      for (let i = 0; i < current.length; i++) {
+        const c = document.createElement('span')
+        c.className = 'roll-cell'
+        c.setAttribute('aria-hidden', 'true')
+        c.style.width = widthPx(current[i]) + 'px'
+        c.appendChild(makeGlyph(current[i], 'new'))
+        root.appendChild(c)
+      }
+      sr.textContent = current
+    }
+
     let idx = 0
-    let timeoutId = null
-    let isCancelled = false
+    let intervalId = null
+    let initTimeout = null
 
-    const next = () => {
-      if (isCancelled) return
-      idx = (idx + 1) % phrases.length
-      fx.setText(phrases[idx]).then(() => {
-        if (!isCancelled) {
-          timeoutId = setTimeout(next, 3400)
-        }
-      })
+    const tick = () => {
+      if (document.hidden) return
+      idx = (idx + 1) % PHRASES.length
+      swap(PHRASES[idx])
     }
 
-    timeoutId = setTimeout(next, 3400)
+    const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()
+    ready.then(() => {
+      init()
+      initTimeout = setTimeout(() => {
+        tick()
+        intervalId = setInterval(tick, PERIOD)
+      }, 900)
+    })
 
     return () => {
-      isCancelled = true
-      clearTimeout(timeoutId)
-      fx.destroy()
+      clearTimeout(initTimeout)
+      clearInterval(intervalId)
+      if (probe.parentNode) probe.parentNode.removeChild(probe)
     }
   }, [reduceMotion])
 
@@ -515,13 +562,9 @@ export default function Home() {
               Filing isn't the hard part.
               <span className="h1-rot-line">
                 <span className="h1-static">It's </span>
-                <span
-                  className="h1-rot"
-                  id="scrambleLine"
-                  ref={scrambleRef}
-                  data-phrases="catching deductions.|proving claims.|flagging risks.|optimizing refunds."
-                >
-                  catching deductions.
+                <span className="h1-rot" aria-live="polite">
+                  <span ref={rollRef} className="roll" aria-hidden="true" />
+                  <span ref={rollSrRef} className="sr-only" />
                 </span>
               </span>
             </h1>
