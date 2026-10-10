@@ -11,8 +11,8 @@
   --sec-green: #0D7A5F;
   --sec-green-light: #E6F5F0;
   --sec-green-mid: #B8E5D5;
-  --sec-serif: 'Instrument Serif', 'Bodoni Moda', serif;
-  --sec-sans: 'DM Sans', system-ui, sans-serif;
+  --sec-serif: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  --sec-sans: var(--sans, 'Inter', system-ui, sans-serif);
   --sec-mono: 'IBM Plex Mono', monospace;
   --sec-radius: 16px;
   --sec-max-w: 1140px;

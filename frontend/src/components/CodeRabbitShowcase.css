@@ -707,3 +707,87 @@
     flex-direction: column;
   }
 }
+
+/* ── Light Mode Token Mappings ── */
+[data-theme="light"] .cr-showcase-wrap {
+  color: var(--text);
+}
+
+[data-theme="light"] .cr-tabs-bar {
+  border-bottom-color: var(--border);
+}
+
+[data-theme="light"] .cr-tab-num {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .cr-tab-text {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .cr-tab-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .cr-tab-btn.active .cr-tab-text {
+  color: var(--text);
+}
+
+[data-theme="light"] .cr-tab-btn.active .cr-tab-num {
+  color: var(--accent);
+}
+
+[data-theme="light"] .cr-tab-timer-track {
+  background: var(--border);
+}
+
+[data-theme="light"] .cr-tab-timer-fill {
+  background: var(--cta);
+}
+
+[data-theme="light"] .cr-tab-btn.active .cr-tab-timer-fill {
+  box-shadow: 0 0 6px rgba(22, 122, 71, 0.4);
+}
+
+[data-theme="light"] .cr-canvas-card {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .cr-status-title {
+  color: var(--text);
+}
+
+[data-theme="light"] .cr-desc {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .cr-tag-label {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .cr-doughnut-card,
+[data-theme="light"] .cr-regime-box,
+[data-theme="light"] .cr-floating-insight,
+[data-theme="light"] .cr-diff-container,
+[data-theme="light"] .cr-chat-bubble.cr-bot {
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .cr-chat-bubble.cr-user {
+  background: var(--user-bubble);
+  color: var(--user-bubble-text);
+}
+
+[data-theme="light"] .cr-play-btn {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .cr-play-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}

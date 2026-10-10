@@ -45,3 +45,15 @@ export const googleLogin = (payload) =>
 
 export const deleteSession = (sessionId) =>
   axios.delete(`${BASE}/sessions/${sessionId}`)
+
+export const getComplianceStatus = () =>
+  axios.get(`${BASE}/compliance/status`)
+
+export const getAuditLogs = (limit = 20) =>
+  axios.get(`${BASE}/compliance/audit-logs`, { params: { limit } })
+
+export const exportComplianceData = (payload) =>
+  axios.post(`${BASE}/compliance/export`, payload)
+
+export const deleteComplianceData = (payload) =>
+  axios.delete(`${BASE}/compliance/data`, { data: payload })

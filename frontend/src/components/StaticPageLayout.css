@@ -38,6 +38,23 @@
   color: #fff;
 }
 
+.static-nav .btn-nav {
+  background: var(--cta);
+  color: var(--cta-text);
+  padding: 10px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.static-nav .btn-nav:hover {
+  background: var(--cta-hover);
+  color: var(--cta-text);
+}
+
 .static-content {
   flex: 1;
   display: flex;

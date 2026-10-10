@@ -1,0 +1,472 @@
+/* ── SOC 2 Trust & Security Center Styles ── */
+
+.security-trust-center {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* Badge & Header */
+.security-hero {
+  text-align: center;
+  padding: 10px 0 30px;
+}
+
+.soc2-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #E0E7FF;
+  color: #3730A3;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  border: 1px solid #C7D2FE;
+}
+
+.security-hero h2 {
+  font-size: 32px;
+  color: var(--ink);
+  margin-bottom: 12px;
+  font-family: var(--serif);
+  line-height: 1.25;
+}
+
+.security-hero p {
+  font-size: 17px;
+  color: var(--ink-2);
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Live Posture Grid */
+.posture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.posture-card {
+  background: #ffffff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.posture-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.posture-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.posture-icon {
+  font-size: 24px;
+}
+
+.posture-status {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+.posture-status.active {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid var(--green-mid);
+}
+
+.posture-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.posture-desc {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Tab Navigation for 5 TSC */
+.tsc-section {
+  background: #ffffff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.tsc-section-header {
+  margin-bottom: 24px;
+}
+
+.tsc-section-header h3 {
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.tsc-section-header p {
+  color: var(--ink-2);
+  font-size: 15px;
+  margin: 0;
+}
+
+.tsc-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--paper-3);
+  margin-bottom: 24px;
+}
+
+.tsc-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tsc-tab-btn:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.tsc-tab-btn.active {
+  background: var(--navy-deep, #0F172A);
+  color: #ffffff;
+}
+
+.tsc-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.control-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--paper);
+  border-radius: var(--r);
+  border-left: 4px solid #1B4FD8;
+}
+
+.control-icon {
+  font-size: 18px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.control-content strong {
+  display: block;
+  font-size: 14.5px;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+
+.control-content p {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Privacy & Data Subject Rights Portal */
+.dsr-portal {
+  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%);
+  border: 1px solid #C7D2FE;
+  border-radius: var(--r-lg);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dsr-header h3 {
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.dsr-header p {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  margin: 0;
+}
+
+.dsr-action-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.dsr-card {
+  background: #ffffff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.dsr-card h4 {
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dsr-card p {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.dsr-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dsr-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--paper-3);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #FAF8F5;
+}
+
+.dsr-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  background: #ffffff;
+}
+
+.dsr-btn-primary {
+  background: var(--blue);
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.dsr-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.dsr-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dsr-btn-danger {
+  background: #DC2626;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.dsr-btn-danger:hover {
+  opacity: 0.9;
+}
+
+.dsr-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dsr-feedback {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.dsr-feedback.success {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid var(--green-mid);
+}
+
+.dsr-feedback.error {
+  background: var(--red-light);
+  color: var(--red-text);
+  border: 1px solid #FECACA;
+}
+
+/* Audit Trail Live Viewer */
+.audit-viewer-section {
+  background: #ffffff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.audit-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.audit-viewer-header h3 {
+  font-size: 20px;
+  color: var(--ink);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audit-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid var(--green-mid);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.audit-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r);
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.audit-table th {
+  background: var(--paper-2);
+  color: var(--ink);
+  font-weight: 600;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--paper-3);
+}
+
+.audit-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--paper-2);
+  color: var(--ink-2);
+  vertical-align: top;
+}
+
+.audit-table tr:last-child td {
+  border-bottom: none;
+}
+
+.hash-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  background: #F1F5F9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #0F172A;
+  word-break: break-all;
+}
+
+/* Subprocessors & Governance Table */
+.subprocessors-table-wrapper {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.subprocessors-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.subprocessors-table th,
+.subprocessors-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--paper-3);
+}
+
+.subprocessors-table th {
+  background: var(--paper-2);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Disclosure Callout */
+.security-callout {
+  background: #F8FAFC;
+  border-left: 4px solid #4F46E5;
+  padding: 20px 24px;
+  border-radius: var(--r);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.security-callout h4 {
+  font-size: 16px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.security-callout p {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin: 0;
+}

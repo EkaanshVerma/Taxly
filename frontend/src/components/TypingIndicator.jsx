@@ -1,4 +1,4 @@
-export default function TypingIndicator() {
+export function TypingIndicator() {
   return (
     <div className="msg-row">
       <div className="msg-avatar">T</div>
@@ -10,3 +10,5 @@ export default function TypingIndicator() {
     </div>
   )
 }
+
+export default TypingIndicator
