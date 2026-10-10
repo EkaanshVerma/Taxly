@@ -99,23 +99,20 @@
   right: 0;
   width: 100%;
   z-index: 1000;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-bottom: 1px solid transparent;
+  background: #090e13;
+  border-bottom: 1px solid var(--line);
   margin: 0;
   border-radius: 0;
   box-shadow: none;
   transition: background 0.35s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              -webkit-backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: background, border-color, box-shadow;
 }
 
 .home-page .site-header-surface {
   width: 100%;
+  background: #090e13;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -153,14 +150,12 @@
   will-change: height, transform;
 }
 
-/* ─── STUCK / SCROLLED STATE (Exact CodeRabbit Floating Spec) ─── */
+/* ─── STUCK / SCROLLED STATE (Exact CodeRabbit Floating Spec, fully opaque) ─── */
 .home-page nav[data-header-stuck="true"],
 .home-page nav.is-stuck {
-  background: rgba(10, 14, 20, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: #090e13;
   border-bottom: 1px solid var(--line);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.32), 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .home-page nav[data-header-stuck="true"] .nav-in,
@@ -2350,17 +2345,16 @@
 }
 
 .home-page[data-theme="light"] nav.site-header-root,
-.home-page[data-theme="light"] nav {
-  background: transparent;
-  border-bottom: 1px solid transparent;
+.home-page[data-theme="light"] nav,
+.home-page[data-theme="light"] .site-header-surface {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
   box-shadow: none;
 }
 
 .home-page[data-theme="light"] nav[data-header-stuck="true"],
 .home-page[data-theme="light"] nav.is-stuck {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: #ffffff;
   border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
