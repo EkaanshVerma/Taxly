@@ -10,6 +10,9 @@ import ChatPage from './pages/ChatPage'
 import SummaryPage from './pages/SummaryPage'
 import ProfilePage from './pages/ProfilePage'
 import DocumentsPage from './pages/DocumentsPage'
+import ForCAs from './pages/ForCAs'
+import About from './pages/About'
+import Faq from './pages/Faq'
 
 // CA pages
 import CALoginPage from './pages/CALoginPage'
@@ -66,6 +69,18 @@ function RequireCAAuth({ children, caToken }) {
   return children
 }
 
+function ScrollToHash() {
+  const location = useLocation()
+  useEffect(() => {
+    if (location.pathname === '/' && location.hash) {
+      setTimeout(() => {
+        document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth' })
+      }, 150)
+    }
+  }, [location])
+  return null
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [caToken, setCAToken] = useState(
@@ -81,6 +96,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToHash />
       <ToastProvider>
         <Routes>
           {/* ── Public ── */}
@@ -117,7 +133,9 @@ export default function App() {
           <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
           <Route path="/refund-policy" element={<RefundPolicyPage />} />
           <Route path="/grievance" element={<GrievancePage />} />
-          <Route path="/for-cas" element={<ForCAsPage />} />
+          <Route path="/for-cas" element={<ForCAs />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<Faq />} />
           <Route path="/for-cas/apply" element={<ForCAsApplyPage />} />
           <Route path="/nri" element={<NRIPage />} />
           <Route path="/guides/itr-1-vs-itr-2" element={<GuideITR1vs2Page />} />

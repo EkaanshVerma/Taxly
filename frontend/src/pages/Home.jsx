@@ -4,6 +4,8 @@ import { createSession } from '../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
 import TaxConstellationOrb from '../components/TaxConstellationOrb'
 import { TAX_YEAR_CONFIG } from '../config/taxYear'
+import SiteNav from '../components/SiteNav'
+import SiteFooter from '../components/SiteFooter'
 import './Home.css'
 
 export default function Home() {
@@ -540,50 +542,12 @@ export default function Home() {
       </div>
 
       {/* ══ NAV ══ */}
-      <nav>
-        <div className="nav-in">
-          <Link to="/" className="brand" aria-label="Taxly Home">
-            <img
-              src={theme === 'light' ? '/logo-color.png' : '/logo-white.png'}
-              alt="Taxly Logo"
-              className="brand-logo-img"
-              onError={(e) => { e.target.src = '/logo.png' }}
-            />
-          </Link>
-          <ul className="nav-links">
-            <li><a href="#how">How it works</a></li>
-            <li><a href="#analyze">Statement AI</a></li>
-            <li><a href="#cas">For CAs</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#engine">Tax engine</a></li>
-          </ul>
-          <div className="nav-right">
-            <button
-              className="theme-toggle"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              aria-pressed={theme === 'dark'}
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            >
-              {theme === 'dark' ? (
-                <svg className="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                </svg>
-              ) : (
-                <svg className="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-                </svg>
-              )}
-            </button>
-            <Link to="/login" className="btn btn-ghost">Log In</Link>
-            <button onClick={startFiling} className="btn btn-fill" disabled={loading}>
-              <span className="nav-btn-text-full">{loading ? 'Starting...' : 'Start a free trial →'}</span>
-              <span className="nav-btn-text-short">{loading ? 'Starting...' : 'Start free →'}</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      <SiteNav
+        theme={theme}
+        toggleTheme={toggleTheme}
+        startFiling={startFiling}
+        loading={loading}
+      />
 
       {/* ══ HERO ══ */}
       <header className="hero">
@@ -1631,55 +1595,7 @@ export default function Home() {
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer>
-        <div className="wrap">
-          <div className="f-grid">
-            <div className="f-brand">
-              <Link to="/" aria-label="Taxly Home">
-                <img
-                  src={theme === 'light' ? '/logo-color.png' : '/logo-white.png'}
-                  alt="Taxly Logo"
-                  className="footer-logo-img"
-                  onError={(e) => { e.target.src = '/logo.png' }}
-                />
-              </Link>
-              <p>Conversational ITR filing for India, with a chartered accountant on every verdict that matters.</p>
-            </div>
-            <div className="f-col">
-              <h5>Product</h5>
-              <a href="#how">How it works</a>
-              <a href="#analyze">Statement analysis</a>
-              <a href="#engine">Tax engine</a>
-              <a href="#pricing">Pricing</a>
-            </div>
-            <div className="f-col">
-              <h5>For CAs</h5>
-              <Link to="/ca/login">CA portal</Link>
-              <Link to="/for-cas/apply">Apply as a partner</Link>
-              <Link to="/pricing">Practice pricing</Link>
-            </div>
-            <div className="f-col">
-              <h5>Legal</h5>
-              <Link to="/privacy-policy">Privacy policy</Link>
-              <Link to="/terms-and-conditions">Terms of use</Link>
-              <Link to="/refund-policy">Refund policy</Link>
-              <Link to="/grievance">Grievance officer</Link>
-            </div>
-          </div>
-
-          <p className="f-legal">
-            Taxly prepares your return and generates the ITR XML. You submit and e-verify it on the income tax
-            portal yourself. The self-file tier is automated tax preparation and does not constitute tax advice.
-            Statement analysis surfaces items for a chartered accountant to verify — it is not a determination of
-            taxability on its own.
-          </p>
-
-          <div className="f-base">
-            <span>© 2026 TAXLY · MADE IN INDIA</span>
-            <span>GRIEVANCE OFFICER · GRIEVANCE@TAXLY.IN · 15-DAY RESPONSE PER IT RULES 2021</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter theme={theme} />
 
       {/* ══ SAMPLE OUTPUT MODAL ══ */}
       {showSampleModal && (
