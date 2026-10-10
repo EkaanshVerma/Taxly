@@ -6,6 +6,7 @@ import TaxConstellationOrb from '../components/TaxConstellationOrb'
 import { TAX_YEAR_CONFIG } from '../config/taxYear'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
+import CookieBanner from '../components/CookieBanner'
 import './Home.css'
 
 export default function Home() {
@@ -1471,6 +1472,9 @@ export default function Home() {
 
       {/* ══ FOOTER ══ */}
       <SiteFooter theme={theme} />
+
+      {/* ══ COOKIE CONSENT BANNER ══ */}
+      <CookieBanner />
 
       {/* ══ SAMPLE OUTPUT MODAL ══ */}
       {showSampleModal && (
