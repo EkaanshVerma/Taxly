@@ -64,13 +64,6 @@ export default function Pricing() {
   // FAQ accordion active item
   const [openFaqIndex, setOpenFaqIndex] = useState(null)
 
-  // Sticky Tier Bar refs and state
-  const cardsSectionRef = useRef(null)
-  const tableSectionRef = useRef(null)
-  const [showStickyBar, setShowStickyBar] = useState(false)
-  const [activeStickySection, setActiveStickySection] = useState('cards') // 'cards' | 'comparison'
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0])
-
   // Theme management
   const [reduceMotion, setReduceMotion] = useState(false)
   const [theme, setTheme] = useState(() => {
@@ -91,47 +84,6 @@ export default function Pricing() {
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  // Track scroll to display floating sticky tier bar right below navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      const cardsEl = cardsSectionRef.current
-      const tableEl = tableSectionRef.current
-      if (!cardsEl) return
-
-      const cardsRect = cardsEl.getBoundingClientRect()
-      const tableRect = tableEl ? tableEl.getBoundingClientRect() : null
-
-      // Show bar when top of cards reaches or passes navbar (cardsRect.top <= 80)
-      // and hide when scrolled past bottom of comparison table
-      const bottomLimit = tableRect ? tableRect.bottom : cardsRect.bottom
-      const isVisible = cardsRect.top <= 80 && bottomLimit >= 140
-
-      setShowStickyBar(isVisible)
-
-      if (isVisible) {
-        if (tableRect && tableRect.top <= 80) {
-          setActiveStickySection('comparison')
-          // Check which category row is active
-          const categoryElements = document.querySelectorAll('.comparison-category-row')
-          let currentCat = CATEGORIES[0]
-          categoryElements.forEach((el, index) => {
-            const rect = el.getBoundingClientRect()
-            if (rect.top <= 140) {
-              currentCat = CATEGORIES[index] || currentCat
-            }
-          })
-          setActiveCategory(currentCat)
-        } else {
-          setActiveStickySection('cards')
-        }
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   // Sync URL search params when audience changes
@@ -276,67 +228,6 @@ export default function Pricing() {
   return (
     <div className={`pricing-page home-page theme-${theme}`} data-theme={theme}>
       <SiteNav theme={theme} toggleTheme={toggleTheme} />
-
-      {/* ─── Floating Sticky Tier Bar (Comes along on scroll) ───────────────── */}
-      <div
-        className={`floating-sticky-tier-bar ${showStickyBar ? 'visible' : ''}`}
-        aria-hidden={!showStickyBar}
-      >
-        <div className="pricing-wrap">
-          <div className="floating-sticky-tier-inner">
-            {activeStickySection === 'comparison' ? (
-              <div className="sticky-comparison-bar-grid">
-                <div className="sticky-comparison-cat-info">
-                  <span className="sticky-cat-brand">Taxly </span>
-                  <span className="sticky-cat-name">{activeCategory?.name || 'Features'}</span>
-                  {activeCategory?.description && (
-                    <span className="sticky-cat-desc">— {activeCategory.description}</span>
-                  )}
-                </div>
-                <div className="sticky-comparison-plans-row">
-                  {plans.map((p) => {
-                    const isHiddenOnMobile = !isDesktop && p.id !== mobileSelectedPlanId
-                    if (isHiddenOnMobile) return null
-
-                    return (
-                      <div
-                        key={p.id}
-                        className={`sticky-tier-col ${p.highlighted ? 'highlighted' : ''}`}
-                      >
-                        <span className="sticky-tier-col-name">{p.name}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="sticky-cards-bar-grid">
-                {plans.map((p) => (
-                  <div
-                    key={p.id}
-                    className={`sticky-tier-card-col ${p.highlighted ? 'highlighted' : ''}`}
-                  >
-                    <div className="sticky-tier-title-wrap">
-                      <span className="sticky-tier-name">{p.name}</span>
-                      {p.price.amount !== null && (
-                        <span className="sticky-tier-price">
-                          {formatPrice(p.price.amount)} {p.price.unit}
-                        </span>
-                      )}
-                    </div>
-                    <Link
-                      to={p.cta.href}
-                      className={`sticky-tier-cta-btn ${p.highlighted ? 'primary' : 'secondary'}`}
-                    >
-                      {p.cta.label === 'Contact Us' ? 'Contact' : 'Start'}
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       <main>
         {/* ─── 1. Page Header & Audience Controls ───────────────────────────── */}
