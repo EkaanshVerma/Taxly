@@ -664,6 +664,198 @@
   font-weight: 600;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   FLOATING STICKY TIER BAR (FOLLOWS ALONG ON SCROLL)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.floating-sticky-tier-bar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(9, 14, 19, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+[data-theme="light"] .floating-sticky-tier-bar {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.floating-sticky-tier-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.floating-sticky-tier-inner {
+  padding: 10px 0;
+}
+
+/* CARDS STICKY BAR LAYOUT */
+.sticky-cards-bar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+  .sticky-cards-bar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .sticky-cards-bar-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+  }
+}
+
+.sticky-tier-card-col {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-right: 1px solid var(--border);
+}
+
+.sticky-tier-card-col:last-child {
+  border-right: none;
+}
+
+.sticky-tier-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sticky-tier-name {
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.sticky-tier-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sticky-tier-cta-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.sticky-tier-cta-btn.primary {
+  background: var(--cta);
+  color: var(--cta-text);
+  border: 1px solid var(--cta);
+}
+
+.sticky-tier-cta-btn.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.sticky-tier-cta-btn.secondary:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* COMPARISON STICKY BAR LAYOUT */
+.sticky-comparison-bar-grid {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sticky-comparison-cat-info {
+  width: 36%;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 16px;
+}
+
+.sticky-cat-brand {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+}
+
+.sticky-cat-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+}
+
+.sticky-cat-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.sticky-comparison-plans-row {
+  width: 64%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+}
+
+.sticky-tier-col {
+  text-align: center;
+  padding: 0 8px;
+  border-left: 1px solid var(--border);
+}
+
+.sticky-tier-col-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--serif, 'Inter Tight', system-ui, sans-serif);
+  letter-spacing: -0.01em;
+}
+
+.sticky-tier-col.highlighted .sticky-tier-col-name {
+  color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .sticky-comparison-cat-info {
+    width: 50%;
+  }
+  .sticky-comparison-plans-row {
+    width: 50%;
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Table Container & Sticky Elements */
 .comparison-table-wrapper {
   overflow: visible;
@@ -675,7 +867,8 @@
 
 .comparison-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
   text-align: left;
 }
