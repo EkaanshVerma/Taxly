@@ -273,7 +273,7 @@ export default function Pricing() {
         </section>
 
         {/* ─── 2. Plan Cards Grid ───────────────────────────────────────────── */}
-        <section ref={cardsSectionRef} className="pricing-wrap" aria-label="Pricing Plans">
+        <section className="pricing-wrap" aria-label="Pricing Plans">
           <div className="plans-grid">
             {plans.map((plan) => {
               const isEnterprise = plan.price.amount === null && !plan.price.unit
@@ -456,7 +456,7 @@ export default function Pricing() {
         </section>
 
         {/* ─── 4. Detailed Plan Comparison Table ───────────────────────────── */}
-        <section ref={tableSectionRef} className="comparison-section pricing-wrap" aria-labelledby="comparison-heading">
+        <section className="comparison-section pricing-wrap" aria-labelledby="comparison-heading">
           <h2 id="comparison-heading" className="comparison-heading">
             Detailed Plan Comparison
           </h2>
