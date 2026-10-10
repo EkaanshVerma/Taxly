@@ -288,39 +288,43 @@ export default function Pricing() {
                     <div className="plan-popular-badge">{plan.badge}</div>
                   )}
 
-                  <header className="plan-card-header">
+                  {/* Sticky Tier Name Header */}
+                  <div className="plan-card-tier-sticky">
                     <h2 className="plan-name">{plan.name}</h2>
-                    <p className="plan-tagline">{renderTagline(plan.tagline)}</p>
-                  </header>
-
-                  <div className="plan-price-block">
-                    {isEnterprise ? (
-                      <div>
-                        <div className="plan-enterprise-label">Custom Enterprise</div>
-                        <div className="plan-price-note">{plan.price.note}</div>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="plan-price-main">
-                          <span className="plan-price-amount">
-                            {formatPrice(plan.price.amount)}
-                          </span>
-                          <span className="plan-price-unit">{plan.price.unit}</span>
-                        </div>
-                        {plan.price.note && (
-                          <div className="plan-price-note">{plan.price.note}</div>
-                        )}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Top CTA */}
-                  <Link
-                    to={plan.cta.href}
-                    className={`plan-cta-btn ${isHighlighted ? 'primary' : 'secondary'}`}
-                  >
-                    {plan.cta.label}
-                  </Link>
+                  <div className="plan-card-meta">
+                    <p className="plan-tagline">{renderTagline(plan.tagline)}</p>
+
+                    <div className="plan-price-block">
+                      {isEnterprise ? (
+                        <div>
+                          <div className="plan-enterprise-label">Custom Enterprise</div>
+                          <div className="plan-price-note">{plan.price.note}</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="plan-price-main">
+                            <span className="plan-price-amount">
+                              {formatPrice(plan.price.amount)}
+                            </span>
+                            <span className="plan-price-unit">{plan.price.unit}</span>
+                          </div>
+                          {plan.price.note && (
+                            <div className="plan-price-note">{plan.price.note}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Top CTA */}
+                    <Link
+                      to={plan.cta.href}
+                      className={`plan-cta-btn ${isHighlighted ? 'primary' : 'secondary'}`}
+                    >
+                      {plan.cta.label}
+                    </Link>
+                  </div>
 
                   {/* Feature Groups (Cumulative ladder) */}
                   <div className="plan-feature-groups">
@@ -479,55 +483,38 @@ export default function Pricing() {
                 Detailed feature comparison across Taxly plans
               </caption>
 
-              {/* Sticky Header Row */}
-              <thead>
-                <tr>
-                  <th scope="col" className="comparison-th-feature">
-                    Features
-                  </th>
-                  {/* On desktop, show all plans; on mobile, show only selected plan */}
-                  {plans.map((p) => {
-                    const isHiddenOnMobile = !isDesktop && p.id !== mobileSelectedPlanId
-                    if (isHiddenOnMobile) return null
-
-                    return (
-                      <th
-                        key={p.id}
-                        scope="col"
-                        className={`comparison-th-plan ${p.highlighted ? 'highlighted' : ''}`}
-                      >
-                        <div className="table-header-plan-name">{p.name}</div>
-                        <div className="table-header-plan-price">
-                          {formatPrice(p.price.amount)} {p.price.unit}
-                        </div>
-                        <Link to={p.cta.href} className="table-header-cta-btn">
-                          {p.cta.label === 'Contact Us' ? 'Contact' : 'Start'}
-                        </Link>
-                      </th>
-                    )
-                  })}
-                </tr>
-              </thead>
-
               <tbody>
                 {CATEGORIES.map((cat) => {
                   const catFeatures = features.filter(f => f.categoryId === cat.id)
 
                   return (
                     <React.Fragment key={cat.id}>
-                      {/* Section Header Row */}
+                      {/* Sticky Category Header Row with Tier Names */}
                       <tr className="comparison-category-row">
-                        <th
-                          colSpan={isDesktop ? plans.length + 1 : 2}
-                          scope="colgroup"
-                        >
-                          <div className="comparison-category-title">
-                            <span>{cat.name}</span>
-                            <span className="comparison-category-desc">
-                              — {cat.description}
-                            </span>
+                        <th scope="row" className="comparison-category-th-feature">
+                          <div className="comparison-category-header-wrap">
+                            <h3 className="comparison-category-title">
+                              <span className="comparison-category-brand">Taxly </span>
+                              <span className="comparison-category-name">{cat.name}</span>
+                            </h3>
+                            <p className="comparison-category-desc">{cat.description}</p>
                           </div>
                         </th>
+
+                        {plans.map((p) => {
+                          const isHiddenOnMobile = !isDesktop && p.id !== mobileSelectedPlanId
+                          if (isHiddenOnMobile) return null
+
+                          return (
+                            <th
+                              key={p.id}
+                              scope="col"
+                              className={`comparison-category-th-plan ${p.highlighted ? 'highlighted' : ''}`}
+                            >
+                              <span className="comparison-category-plan-name">{p.name}</span>
+                            </th>
+                          )
+                        })}
                       </tr>
 
                       {/* Feature Rows */}
