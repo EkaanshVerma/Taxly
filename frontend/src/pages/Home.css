@@ -47,8 +47,7 @@
 
 /* ══ PHASE 1: ONE SHARED CONTAINER ══ */
 .home-page .wrap,
-.home-page .container,
-.home-page .nav-in {
+.home-page .container {
   width: min(1200px, calc(100% - 2 * var(--gutter)));
   margin-inline: auto;
   box-sizing: border-box;
