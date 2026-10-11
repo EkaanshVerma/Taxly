@@ -25,7 +25,9 @@
 .taxly-stage {
   position: sticky;
   top: calc(var(--nav-h) + 12px);
-  height: min(720px, calc(100svh - var(--nav-h) - 24px));
+  height: calc(100svh - var(--nav-h) - 24px);
+  min-height: 640px;
+  max-height: 820px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -39,6 +41,8 @@
   .taxly-stage {
     padding: 0 24px;
     height: calc(100svh - var(--nav-h) - 16px);
+    min-height: auto;
+    max-height: none;
   }
 }
 
@@ -50,12 +54,12 @@
   border-radius: 24px;
   border: 1px solid var(--border);
   background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
-  padding: 32px 40px;
+  padding: 24px 36px;
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 5fr 7fr;
-  gap: 48px;
-  align-items: stretch;
+  gap: 40px;
+  align-items: center;
   box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.12);
   overflow: clip; /* clip does not break sticky */
   position: relative;
@@ -480,12 +484,12 @@
   box-shadow: 0 0 6px var(--accent);
 }
 
-/* Window Body: 24px padding, 16px module gap */
+/* Window Body: compact spacing so all 5 modules and the action button fit with headroom */
 .taxly-window-body {
-  padding: 24px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   box-sizing: border-box;
   background: var(--surface-raised);
 }
@@ -498,10 +502,10 @@
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-muted);
-  padding: 14px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   box-sizing: border-box;
   opacity: 0.6;
   transition: opacity 200ms ease, border-color 200ms ease, background-color 200ms ease, color 200ms ease;
@@ -564,7 +568,7 @@
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
   transition: border-color 200ms ease, background-color 200ms ease;
@@ -612,7 +616,7 @@
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
 }
@@ -660,7 +664,7 @@
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   transition: border-color 200ms ease, background-color 200ms ease;
@@ -758,7 +762,7 @@
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-muted);
-  padding: 14px 16px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
