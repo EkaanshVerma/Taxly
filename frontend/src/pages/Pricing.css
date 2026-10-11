@@ -12,7 +12,7 @@
   background-size: 44px 44px;
   color: var(--text);
   min-height: 100vh;
-  font-family: var(--sans, 'Inter', system-ui, sans-serif);
+  font-family: var(--sans, 'Roboto Mono', monospace);
   line-height: 1.5;
   overflow-x: clip;
   overflow-y: visible;
@@ -468,7 +468,7 @@
   width: 100%;
   cursor: pointer;
   color: var(--text-muted);
-  font-family: var(--mono, 'JetBrains Mono', monospace);
+  font-family: var(--mono, 'Roboto Mono', monospace);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;

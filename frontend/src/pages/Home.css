@@ -21,9 +21,9 @@
   --line: var(--border);
   --line-soft: rgba(31, 43, 54, 0.6);
 
-  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --sans: 'Roboto Mono', monospace, -apple-system, sans-serif;
   --serif: 'Inter Tight', system-ui, -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', monospace;
+  --mono: 'Roboto Mono', monospace;
   --max: 1240px;
 }
 

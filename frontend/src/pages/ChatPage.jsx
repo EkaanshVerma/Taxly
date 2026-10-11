@@ -207,7 +207,7 @@ export default function ChatPage() {
           flex-direction: column;
           height: 100vh;
           background: var(--paper, #F7F6F2);
-          font-family: var(--sans, 'DM Sans', sans-serif);
+          font-family: var(--sans, 'Roboto Mono', monospace);
           position: relative;
           overflow: hidden;
         }
