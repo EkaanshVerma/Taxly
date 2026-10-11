@@ -1212,19 +1212,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ SCROLL-PINNED FEATURE SHOWCASE (TAXLYWEB STICKY SHOWCASE) ══ */}
-      <section className="ctx" id="context" style={{ padding: '80px 0 0', position: 'relative' }}>
-        <div className="wrap ctx-head rv" style={{ marginBottom: '48px' }}>
-          <div className="sec-tag" style={{ color: '#10B981', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
-            INTELLIGENCE CORE
-          </div>
-          <h2>Best-in-class context. <em>Every source, one return.</em></h2>
-          <p className="sec-sub">
-            Across each step, Taxly ingests, normalizes, and reconciles dozens more data points than traditional tools —
-            guaranteeing zero missed exemptions and zero arithmetic discrepancies.
-          </p>
-        </div>
-
+      {/* ══ SCROLL-PINNED FEATURE SHOWCASE (TAXLY INTELLIGENCE CORE) ══ */}
+      <section className="ctx" id="context" style={{ padding: 0, position: 'relative', borderTop: '1px solid var(--border)' }}>
         <TaxlyStickyShowcase />
       </section>
 

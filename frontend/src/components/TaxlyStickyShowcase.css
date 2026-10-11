@@ -1,63 +1,737 @@
 /* ============================================================
-   TAXLY STICKY SHOWCASE
-   Scroll-linked, sticky feature showcase with Framer Motion
+   TAXLY INTELLIGENCE CORE SHOWCASE
+   Tokens, 8px Spacing Scale, 5fr/7fr Grid, Progress Stepper
    ============================================================ */
 
-.taxly-sticky-showcase-wrapper {
+:root {
+  --nav-h: 64px;
+}
+
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── RUNWAY (5 × 80vh = 400vh) ── */
+.taxly-showcase-runway {
+  position: relative;
+  width: 100%;
+  padding: 96px 48px;
+  max-width: 1336px; /* 1240px content + 2 * 48px gutter */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .taxly-showcase-runway {
+    padding: 64px 24px;
+  }
+}
+
+/* ── STICKY VIEWPORT STAGE ── */
+.taxly-showcase-sticky-shell {
+  position: sticky;
+  top: calc(var(--nav-h) + 16px);
+  height: min(720px, calc(100svh - var(--nav-h) - 32px));
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ── ONE OUTER CONTAINER (Radius 24px, 1px border, surface-to-bg gradient) ── */
+.taxly-showcase-container {
+  width: 100%;
+  max-width: 1240px;
+  height: 100%;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  padding: 32px 40px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 48px;
+  align-items: stretch;
+  box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 1024px) {
+  .taxly-showcase-container {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    height: auto;
+    max-height: none;
+    padding: 24px;
+    overflow-y: auto;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   LEFT COLUMN: THREE ZONES (justify-content: space-between)
+   ════════════════════════════════════════════════════════════ */
+.taxly-col-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+/* 1. HEADER ZONE */
+.taxly-header-zone {
+  display: flex;
+  flex-direction: column;
+}
+
+.taxly-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.taxly-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.taxly-headline {
+  font-family: var(--serif);
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 0;
+  text-wrap: balance;
+  max-width: 14ch;
+}
+
+.taxly-headline-muted {
+  color: var(--text-muted);
+}
+
+/* 2. STEPS ZONE: PROGRESS RAIL & STEPPER */
+.taxly-steps-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.taxly-stepper-rail-wrapper {
   position: relative;
   width: 100%;
 }
 
-/* Card glass styling */
-.taxly-showcase-card {
-  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.7),
-              0 0 0 1px rgba(255, 255, 255, 0.08);
+/* 2px Progress Rail Track */
+.taxly-rail-track {
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--border);
+  border-radius: 2px;
 }
 
-/* Menu items */
-.taxly-menu-item {
+/* Animated Fill Segment */
+.taxly-rail-fill {
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--accent);
+  z-index: 2;
+}
+
+.taxly-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   position: relative;
-  border: 1px solid transparent;
-  background: transparent;
+}
+
+.taxly-step-item {
+  position: relative;
   cursor: pointer;
-  text-align: left;
+  padding-left: 28px; /* text never touches the rail */
+  outline: none;
   user-select: none;
+  transition: opacity 0.25s ease;
 }
 
-.taxly-menu-item:hover {
-  background: rgba(255, 255, 255, 0.02);
+/* 10px Rail Node */
+.taxly-rail-node {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 3;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
-/* Scroll sections */
-.taxly-scroll-section {
+.taxly-rail-node.node-upcoming {
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+}
+
+.taxly-rail-node.node-done {
+  background: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+
+.taxly-rail-node.node-active {
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 3px var(--accent), 0 0 12px var(--accent);
+}
+
+.taxly-step-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.taxly-step-category {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  transition: color 0.25s ease;
+}
+
+.taxly-step-category.cat-active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.taxly-step-title {
+  margin: 2px 0 0 0;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: font-size 0.25s ease, line-height 0.25s ease, color 0.25s ease, font-weight 0.25s ease;
+  will-change: font-size, color;
+}
+
+.taxly-step-title.title-active {
+  font-size: 23px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.taxly-step-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.taxly-step-accordion.open {
+  grid-template-rows: 1fr;
+}
+
+.taxly-accordion-inner {
+  overflow: hidden;
+}
+
+.taxly-step-desc {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--text-muted);
+  max-width: 44ch;
+  margin: 8px 0 0 0;
+}
+
+/* Chips Row */
+.taxly-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.taxly-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent-soft);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.taxly-chip-check {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* 3. META ZONE */
+.taxly-meta-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+
+.taxly-meta-stage {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.taxly-meta-note {
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════
+   RIGHT COLUMN: MOCKUP WINDOW & AMBIENT GLOW
+   ════════════════════════════════════════════════════════════ */
+.taxly-col-right {
   position: relative;
-  scroll-margin-top: 15vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-/* Mobile responsive fallback: Single column with canvas sticky at top */
-@media (max-width: 768px) {
-  .taxly-showcase-card {
-    height: auto;
-    max-height: none;
-    border-radius: 12px;
-  }
+/* Soft ambient glow (8% opacity dark, 6% light) */
+.taxly-ambient-glow {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  opacity: 0.08;
+  filter: blur(64px);
+  pointer-events: none;
+}
 
-  .taxly-showcase-nav {
-    display: none; /* Text sections scroll below sticky canvas on mobile */
-  }
+[data-theme="light"] .taxly-ambient-glow {
+  opacity: 0.06;
+}
 
-  .taxly-showcase-canvas {
-    position: sticky;
-    top: 64px;
-    z-index: 30;
-    height: 380px;
-    border-radius: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
+/* Optional faint dotted grid (4% opacity) */
+.taxly-dotted-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--text) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.04;
+  pointer-events: none;
+}
 
-  .taxly-scroll-section {
-    min-height: 80vh;
-    padding-top: 20px;
-    padding-bottom: 40px;
-  }
+/* Mockup Window (Centered, width up to 680px) */
+.taxly-mockup-window {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+/* Window Topbar */
+.taxly-window-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.taxly-mac-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.taxly-mac-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-red { background: #ff5f56; }
+.dot-yellow { background: #ffbd2e; }
+.dot-green { background: #27c93f; }
+
+.taxly-window-url {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.taxly-window-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.taxly-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* Window Body */
+.taxly-window-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+/* Shared Card Panel */
+.taxly-card-panel {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.taxly-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--sans);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.taxly-status-tag-green {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.taxly-status-tag {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Ledger Grid */
+.taxly-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.taxly-metric-box {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.taxly-metric-box.highlight {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.taxly-metric-lbl {
+  font-size: 10px;
+  font-family: var(--sans);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.taxly-metric-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.taxly-metric-val.accent {
+  color: var(--accent);
+}
+
+.taxly-metric-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Connectors Grid */
+.taxly-connectors-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.taxly-conn-box {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.taxly-conn-name {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.taxly-conn-amount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+/* Regime Grid */
+.taxly-badge-save {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+}
+
+.taxly-regime-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.taxly-regime-box {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.taxly-regime-box.winner {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.taxly-regime-title {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.taxly-regime-title.accent {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.taxly-regime-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.taxly-regime-amount.strike {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.taxly-regime-amount.accent {
+  color: var(--accent);
+}
+
+.taxly-regime-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.taxly-regime-meta.accent {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Audit Row */
+.taxly-audit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.taxly-audit-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.taxly-audit-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.taxly-audit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.taxly-audit-proof {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.taxly-audit-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.taxly-audit-tags span {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* CA Dispatch Card */
+.taxly-ca-dispatch-card {
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.taxly-ca-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.taxly-ca-badge-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.taxly-ca-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.taxly-ca-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.taxly-ca-sub strong {
+  color: var(--accent);
+}
+
+.taxly-dispatch-btn {
+  background: var(--cta);
+  color: var(--cta-text);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.taxly-dispatch-btn:hover {
+  background: var(--cta-hover);
+  transform: translateY(-1px);
+}
+
+/* ── 5 × 80vh RUNWAY STAGES (400vh total height) ── */
+.taxly-runway-anchors {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.taxly-runway-stage {
+  height: 80vh;
+  width: 100%;
 }
