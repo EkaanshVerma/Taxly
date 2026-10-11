@@ -11,9 +11,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── RUNWAY (5 × 90vh + 80vh = 530vh) ── */
+/* ── RUNWAY (Stepped scroll runway) ── */
 .taxly-runway {
-  height: calc(var(--n, 5) * 90vh + 80vh);
+  height: calc(100vh + (var(--n, 5) - 1) * 70vh);
   position: relative;
   width: 100%;
   box-sizing: border-box;

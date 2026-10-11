@@ -51,34 +51,63 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
   const stageRef = useRef(null)
   const activeIdxRef = useRef(0)
   const rafIdRef = useRef(null)
+  const lockUntilRef = useRef(0)
 
-  // Window scroll-driven sticky runway logic
+  // Smoothly scroll window to target step and update state
+  const scrollToStep = useCallback((idx) => {
+    if (!runwayRef.current) return
+    const n = TAXLY_STAGES.length
+    const targetIdx = Math.max(0, Math.min(n - 1, idx))
+
+    activeIdxRef.current = targetIdx
+    setActiveIdx(targetIdx)
+
+    const r = runwayRef.current.getBoundingClientRect()
+    const runwayTop = r.top + window.scrollY
+    const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
+    const dockTop = 76
+    const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - dockTop)
+    const total = runwayRef.current.offsetHeight - stageH
+
+    const p = targetIdx / (n - 1)
+    runwayRef.current.style.setProperty('--p', p.toString())
+
+    const targetScroll = runwayTop - dockTop + p * total
+    const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    window.scrollTo({
+      top: targetScroll,
+      behavior: reduced ? 'auto' : 'smooth'
+    })
+  }, [])
+
+  // Window scroll, wheel, and touch event listeners
   useEffect(() => {
     const n = TAXLY_STAGES.length
 
+    // Keep --p CSS var and active step in sync on general page scrolling
     const updateScroll = () => {
       if (!runwayRef.current) return
       const r = runwayRef.current.getBoundingClientRect()
       const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
-      const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - 76)
-      const dockTop = 76 // 64px nav-h + 12px margin
-
-      // 40vh buffer at top before steps advance, 40vh buffer at bottom
-      const topPad = window.innerHeight * 0.4
-      const botPad = window.innerHeight * 0.4
-      const total = (r.height - stageH) - topPad - botPad
+      const dockTop = 76
+      const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - dockTop)
+      const total = r.height - stageH
 
       if (total <= 0) return
 
       const scrolled = -r.top + dockTop
-      const p = Math.max(0, Math.min(1, (scrolled - topPad) / total))
-      const index = Math.min(n - 1, Math.max(0, Math.floor(p * n)))
+      const p = Math.max(0, Math.min(1, scrolled / total))
 
       runwayRef.current.style.setProperty('--p', p.toString())
 
-      if (index !== activeIdxRef.current) {
-        activeIdxRef.current = index
-        setActiveIdx(index)
+      // If not currently executing a step-wheel animation lock, sync activeIdx
+      if (Date.now() >= lockUntilRef.current) {
+        const index = Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))
+        if (index !== activeIdxRef.current) {
+          activeIdxRef.current = index
+          setActiveIdx(index)
+        }
       }
     }
 
@@ -87,43 +116,130 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
       rafIdRef.current = requestAnimationFrame(updateScroll)
     }
 
+    // Step-snapped wheel handling: every scroll flick advances 1 step
+    const onWheel = (e) => {
+      if (!runwayRef.current) return
+      const r = runwayRef.current.getBoundingClientRect()
+      const dockTop = 76
+      const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
+      const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - dockTop)
+      const total = runwayRef.current.offsetHeight - stageH
+
+      if (total <= 0) return
+
+      // Stage is pinned while inside the runway boundaries
+      const isDocked = r.top <= dockTop + 15 && r.bottom >= stageH + dockTop - 15
+
+      if (!isDocked) {
+        // Outside the sticky runway, allow normal native page scroll
+        return
+      }
+
+      const delta = e.deltaY
+      if (Math.abs(delta) < 8) return
+
+      const now = Date.now()
+      const isLocked = now < lockUntilRef.current
+
+      // Scrolling DOWN
+      if (delta > 0) {
+        if (activeIdxRef.current < n - 1) {
+          e.preventDefault()
+          if (!isLocked) {
+            lockUntilRef.current = now + 480
+            scrollToStep(activeIdxRef.current + 1)
+          }
+        }
+        // At last step (step 4), do NOT preventDefault: page scrolls down naturally to next section
+      }
+      // Scrolling UP
+      else if (delta < 0) {
+        if (activeIdxRef.current > 0) {
+          e.preventDefault()
+          if (!isLocked) {
+            lockUntilRef.current = now + 480
+            scrollToStep(activeIdxRef.current - 1)
+          }
+        }
+        // At first step (step 0), do NOT preventDefault: page scrolls up naturally to previous section
+      }
+    }
+
+    // Touch gesture support for mobile/tablets
+    let touchStartY = 0
+    const onTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY
+    }
+    const onTouchMove = (e) => {
+      if (!runwayRef.current) return
+      const r = runwayRef.current.getBoundingClientRect()
+      const dockTop = 76
+      const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
+      const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - dockTop)
+      const total = runwayRef.current.offsetHeight - stageH
+
+      if (total <= 0) return
+      const isDocked = r.top <= dockTop + 15 && r.bottom >= stageH + dockTop - 15
+      if (!isDocked) return
+
+      const currentY = e.touches[0].clientY
+      const diff = touchStartY - currentY
+      if (Math.abs(diff) < 25) return
+
+      const now = Date.now()
+      const isLocked = now < lockUntilRef.current
+
+      if (diff > 0) {
+        // Swiping UP (scrolling DOWN)
+        if (activeIdxRef.current < n - 1) {
+          if (e.cancelable) e.preventDefault()
+          if (!isLocked) {
+            lockUntilRef.current = now + 480
+            touchStartY = currentY
+            scrollToStep(activeIdxRef.current + 1)
+          }
+        }
+      } else if (diff < 0) {
+        // Swiping DOWN (scrolling UP)
+        if (activeIdxRef.current > 0) {
+          if (e.cancelable) e.preventDefault()
+          if (!isLocked) {
+            lockUntilRef.current = now + 480
+            touchStartY = currentY
+            scrollToStep(activeIdxRef.current - 1)
+          }
+        }
+      }
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll, { passive: true })
     window.addEventListener('load', onScroll, { passive: true })
+    window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(updateScroll)
     }
 
-    // Initial calculation
     updateScroll()
 
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       window.removeEventListener('load', onScroll)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
     }
-  }, [])
+  }, [scrollToStep])
 
-  // Optional click/keyboard handler: smoothly scrolls window to target step
+  // Click/keyboard handler
   const handleStepClick = useCallback((i) => {
-    if (!runwayRef.current) return
-    const n = TAXLY_STAGES.length
-    const runwayTop = runwayRef.current.getBoundingClientRect().top + window.scrollY
-    const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
-    const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - 76)
-    const dockTop = 76
-    const topPad = window.innerHeight * 0.4
-    const botPad = window.innerHeight * 0.4
-    const total = (runwayRef.current.offsetHeight - stageH) - topPad - botPad
-    const targetScroll = runwayTop - dockTop + topPad + ((i + 0.5) / n) * total
-    const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    window.scrollTo({
-      top: targetScroll,
-      behavior: reduced ? 'auto' : 'smooth'
-    })
-  }, [])
+    scrollToStep(i)
+  }, [scrollToStep])
 
   return (
     <section id={id} className="taxly-runway" ref={runwayRef} style={{ '--n': TAXLY_STAGES.length }}>
