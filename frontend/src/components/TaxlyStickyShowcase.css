@@ -1,0 +1,63 @@
+/* ============================================================
+   TAXLY STICKY SHOWCASE
+   Scroll-linked, sticky feature showcase with Framer Motion
+   ============================================================ */
+
+.taxly-sticky-showcase-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Card glass styling */
+.taxly-showcase-card {
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.7),
+              0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Menu items */
+.taxly-menu-item {
+  position: relative;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+}
+
+.taxly-menu-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Scroll sections */
+.taxly-scroll-section {
+  position: relative;
+  scroll-margin-top: 15vh;
+}
+
+/* Mobile responsive fallback: Single column with canvas sticky at top */
+@media (max-width: 768px) {
+  .taxly-showcase-card {
+    height: auto;
+    max-height: none;
+    border-radius: 12px;
+  }
+
+  .taxly-showcase-nav {
+    display: none; /* Text sections scroll below sticky canvas on mobile */
+  }
+
+  .taxly-showcase-canvas {
+    position: sticky;
+    top: 64px;
+    z-index: 30;
+    height: 380px;
+    border-radius: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .taxly-scroll-section {
+    min-height: 80vh;
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+}
