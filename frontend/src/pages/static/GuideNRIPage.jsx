@@ -1,11 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import StaticPageLayout from '../../components/StaticPageLayout'
+import { TAX_YEAR_CONFIG } from '../../config/taxYear'
 
 export default function GuideNRIPage() {
   return (
-    <StaticPageLayout title="NRI Tax Filing in India — Complete Guide (AY 2025–26)">
-      <div style={s.meta}>AY 2025–26 · 7 min read · Updated June 2025</div>
+    <StaticPageLayout title={`NRI Tax Filing in India — Complete Guide (${TAX_YEAR_CONFIG.assessmentYear})`}>
+      <div style={s.meta}>{TAX_YEAR_CONFIG.assessmentYear} · 7 min read · Updated 2026</div>
 
       <p style={s.lead}>
         Non-Resident Indians (NRIs) often face the most confusing tax situations — multiple currencies, 

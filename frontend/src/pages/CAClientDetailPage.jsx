@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getSession } from '../api/taxly'
 import { approveClient, downloadXml } from '../api/ca'
 import { useToast } from '../components/ToastContext'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 
 const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 
@@ -78,7 +79,7 @@ export default function CAClientDetailPage({ caToken }) {
         <button className="cacd-back" onClick={() => navigate('/ca/dashboard')}>← Dashboard</button>
         <div>
           <div className="cacd-header-name">{session.client_name || session.user_id || 'Client'}</div>
-          <div className="cacd-header-sub">Session {sessionId.slice(0, 8)}… · AY 2025–26</div>
+          <div className="cacd-header-sub">Session {sessionId.slice(0, 8)}… · {TAX_YEAR_CONFIG.assessmentYear}</div>
         </div>
         <div className="cacd-header-actions">
           {session.status === 'complete' && (

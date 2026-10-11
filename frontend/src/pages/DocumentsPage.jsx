@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { getSessions, downloadXml } from '../api/taxly'
 import { useToast } from '../components/ToastContext'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 
 export default function DocumentsPage() {
   const navigate = useNavigate()
@@ -69,7 +70,7 @@ export default function DocumentsPage() {
                   📄
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>ITR XML — AY 2025–26</div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>ITR XML — {TAX_YEAR_CONFIG.assessmentYear}</div>
                   <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 2 }}>
                     Session {s.session_id.slice(0, 12)}… · Filed {new Date(s.updated_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </div>

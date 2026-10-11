@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { ShieldCheck } from 'lucide-react'
+import { TAX_YEAR_CONFIG } from '../config/taxYear.ts'
+import { getClaim } from '../content/claims.ts'
+import { computeSample, formatINR, formatINRLakh } from '../demo/sampleReturn.ts'
 import './TaxlyStickyShowcase.css'
 
-export const TAXLY_STAGES = [
+export const getTaxlyStages = (sample) => [
   {
     id: 'ais-reconciliation',
     category: 'DATA INGESTION',
     stepNumber: '01',
     title: 'AIS & 26AS Reconciliation',
     description: 'Automated cross-referencing of Form 26AS, Annual Information Statement (AIS), and TIS to detect discrepancies before filing.',
-    chips: ['Form 26AS Verified', '18 AIS Entries Reconciled', 'Zero Mismatched Credits']
+    chips: ['Form 26AS Verified', `${sample.aisEntriesCount} AIS Entries Reconciled`, getClaim('zeroDiscrepancy')]
   },
   {
     id: 'multi-source-ingestion',
@@ -25,23 +28,23 @@ export const TAXLY_STAGES = [
     stepNumber: '03',
     title: 'Regime & Deduction Optimizer',
     description: 'Simulates Old vs New Tax Regime with automated calculation of 80C, 80D, HRA exemptions, and Section 87A rebate.',
-    chips: ['Dual Regime Simulation', 'Sec 80C/80D Maximized', '₹34,300 Tax Saved']
+    chips: ['Dual Regime Simulation', 'Sec 80C/80D Maximized', `${formatINR(sample.savings)} Tax Saved`]
   },
   {
     id: 'deterministic-engine',
     category: 'COMPLIANCE ENGINE',
     stepNumber: '04',
     title: 'Deterministic Tax Engine',
-    description: 'Runs 130+ unit-tested statutory rules with zero LLM hallucination in arithmetic or tax slab bracket thresholds.',
-    chips: ['134 Unit Tests Passed', 'Mathematical Proof', 'Sec 115BAC Relief Verified']
+    description: getClaim('deterministicDescription'),
+    chips: [getClaim('unitTestsPassedChip'), 'Mathematical Proof', 'Sec 115BAC Relief Verified']
   },
   {
     id: 'ca-certified-dispatch',
     category: 'AUDITED SUBMISSION',
     stepNumber: '05',
     title: 'CA Certified E-Filing',
-    description: 'Final verification by chartered accountants, generation of valid ITR JSON/XML, and direct submission to the ITD portal.',
-    chips: ['ICAI CA Sign-Off', 'ITD Gateway Verified', 'Instant ITR-V Ack']
+    description: getClaim('submissionDescription'),
+    chips: [getClaim('caSignOff'), getClaim('gatewayVerified'), getClaim('itrAck')]
   }
 ]
 
@@ -53,10 +56,13 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
   const rafIdRef = useRef(null)
   const lockUntilRef = useRef(0)
 
+  const sample = useMemo(() => computeSample(), [])
+  const stages = useMemo(() => getTaxlyStages(sample), [sample])
+  const n = stages.length
+
   // Smoothly scroll window to target step and update state
   const scrollToStep = useCallback((idx) => {
     if (!runwayRef.current) return
-    const n = TAXLY_STAGES.length
     const targetIdx = Math.max(0, Math.min(n - 1, idx))
 
     activeIdxRef.current = targetIdx
@@ -79,12 +85,10 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
       top: targetScroll,
       behavior: reduced ? 'auto' : 'smooth'
     })
-  }, [])
+  }, [n])
 
   // Window scroll, wheel, and touch event listeners
   useEffect(() => {
-    const n = TAXLY_STAGES.length
-
     // Keep --p CSS var and active step in sync on general page scrolling
     const updateScroll = () => {
       if (!runwayRef.current) return
@@ -234,7 +238,7 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
       window.removeEventListener('touchmove', onTouchMove)
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
     }
-  }, [scrollToStep])
+  }, [n, scrollToStep])
 
   // Click/keyboard handler
   const handleStepClick = useCallback((i) => {
@@ -242,7 +246,7 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
   }, [scrollToStep])
 
   return (
-    <section id={id} className="taxly-runway" ref={runwayRef} style={{ '--n': TAXLY_STAGES.length }}>
+    <section id={id} className="taxly-runway" ref={runwayRef} style={{ '--n': n }}>
       {/* ── STAGE: STICKY VIEWPORT PINNED CONTAINER ── */}
       <div className="taxly-stage" ref={stageRef}>
         <div className="taxly-showcase-container">
@@ -256,7 +260,7 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
                 <span>TAXLY INTELLIGENCE CORE</span>
               </div>
               <h2 className="taxly-headline">
-                <span>Deterministic accuracy.</span>{' '}
+                <span>Deterministic accuracy.</span>
                 <span className="taxly-headline-muted">Every source.</span>
               </h2>
             </div>
@@ -271,7 +275,7 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
 
                 {/* Steps List */}
                 <div className="taxly-steps-list">
-                  {TAXLY_STAGES.map((step, idx) => {
+                  {stages.map((step, idx) => {
                     const isActive = activeIdx === idx
                     const isDone = activeIdx > idx
 
@@ -341,18 +345,18 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
                 Stage {activeIdx + 1} of 5
               </span>
               <span className="taxly-meta-note">
-                Live CBDT AY 2025-26 Engine
+                {getClaim('rulesEngine')}
               </span>
             </div>
           </div>
 
           {/* ── RIGHT COLUMN (7fr) ── */}
           <div className="taxly-col-right">
-            {/* Ambient Background Glow (6% light, 8% dark) */}
+            {/* Ambient Background Glow */}
             <div className="taxly-ambient-glow" />
             <div className="taxly-dotted-grid" />
 
-            {/* Mockup Window (Centered, width up to 680px) */}
+            {/* Mockup Window */}
             <div className="taxly-mockup-window">
               {/* Window Header */}
               <div className="taxly-window-topbar">
@@ -362,54 +366,52 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
                   <span className="dot dot-green" />
                 </div>
                 <div className="taxly-window-url font-tabular">
-                  taxly://filing/session?ay=2025-26
+                  taxly://filing/session?ay={TAX_YEAR_CONFIG.aySlug}
                 </div>
-                <div className="taxly-window-badge">
-                  <span className="taxly-live-dot" />
-                  <span className="font-tabular">ITR-2 Verified</span>
+                <div className="taxly-window-right">
+                  <span className="taxly-sample-tag font-tabular font-mono">SAMPLE DATA</span>
+                  <div className="taxly-window-badge">
+                    <span className="taxly-live-dot" />
+                    <span className="font-tabular">{getClaim('itr2Verified')}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Window Body (Persistent Base + Sequential Layers) */}
+              {/* Window Body (All 5 Modules Visible, Active Emphasised) */}
               <div className="taxly-window-body">
                 
-                {/* LAYER 0: AIS & 26AS RECONCILIATION */}
-                <div className="taxly-card-panel">
+                {/* MODULE 0: AIS & 26AS RECONCILIATION (Owned by Step 1, activeIdx === 0) */}
+                <div className={`taxly-card-panel ${activeIdx === 0 ? 'module-active' : ''}`}>
                   <div className="taxly-panel-header">
                     <span className="taxly-panel-label">Tax Credit Stream</span>
-                    <span className="taxly-status-tag-green">0 Discrepancy</span>
+                    <span className={activeIdx === 0 ? 'taxly-status-tag-green' : 'taxly-status-tag'}>
+                      {getClaim('zeroDiscrepancy')}
+                    </span>
                   </div>
 
                   <div className="taxly-ledger-grid">
                     <div className="taxly-metric-box">
                       <span className="taxly-metric-lbl">FORM 26AS</span>
-                      <span className="taxly-metric-val font-tabular">₹3,42,800</span>
-                      <span className="taxly-metric-sub font-tabular">4 Qtrs Matched</span>
+                      <span className="taxly-metric-val font-tabular">{formatINR(sample.form26asTds)}</span>
+                      <span className="taxly-metric-sub font-tabular">{sample.qtrsMatchedCount} Qtrs Matched</span>
                     </div>
                     <div className="taxly-metric-box">
                       <span className="taxly-metric-lbl">AIS / TIS FEED</span>
-                      <span className="taxly-metric-val font-tabular">₹18,50,000</span>
-                      <span className="taxly-metric-sub font-tabular">18 Entries Normal</span>
+                      <span className="taxly-metric-val font-tabular">{formatINR(sample.aisTisFeed)}</span>
+                      <span className="taxly-metric-sub font-tabular">{sample.aisEntriesCount} Entries Normal</span>
                     </div>
-                    <div className="taxly-metric-box highlight">
+                    <div className={`taxly-metric-box ${activeIdx === 0 ? 'highlight' : ''}`}>
                       <span className="taxly-metric-lbl">NET TDS CLAIM</span>
-                      <span className="taxly-metric-val accent font-tabular">₹3,42,800</span>
-                      <span className="taxly-metric-sub font-tabular">100% Eligible</span>
+                      <span className={`taxly-metric-val font-tabular ${activeIdx === 0 ? 'accent' : ''}`}>
+                        {formatINR(sample.netTdsClaim)}
+                      </span>
+                      <span className="taxly-metric-sub font-tabular">{getClaim('eligibleCredits')}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* LAYER 1: MULTI-SOURCE INGESTION (Revealed when activeIdx >= 1) */}
-                <motion.div
-                  initial={false}
-                  animate={{
-                    opacity: activeIdx >= 1 ? 1 : 0.28,
-                    scale: activeIdx >= 1 ? 1 : 0.985,
-                    filter: activeIdx >= 1 ? 'grayscale(0%)' : 'grayscale(100%)'
-                  }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="taxly-card-panel"
-                >
+                {/* MODULE 1: MULTI-SOURCE INGESTION (Owned by Step 2, activeIdx === 1) */}
+                <div className={`taxly-card-panel ${activeIdx === 1 ? 'module-active' : ''}`}>
                   <div className="taxly-panel-header">
                     <span className="taxly-panel-label">Multi-Broker Capital Gains &amp; Salary</span>
                     <span className="taxly-status-tag font-tabular">4 Connectors</span>
@@ -418,110 +420,93 @@ export default function TaxlyStickyShowcase({ id = 'context' }) {
                   <div className="taxly-connectors-grid">
                     <div className="taxly-conn-box">
                       <span className="taxly-conn-name">Zerodha</span>
-                      <span className="taxly-conn-amount font-tabular">LTCG ₹1.82L</span>
+                      <span className="taxly-conn-amount font-tabular">LTCG {formatINRLakh(sample.zerodhaLtcg)}</span>
                     </div>
                     <div className="taxly-conn-box">
                       <span className="taxly-conn-name">Groww MF</span>
-                      <span className="taxly-conn-amount font-tabular">STCG ₹34.5K</span>
+                      <span className="taxly-conn-amount font-tabular">STCG {formatINRLakh(sample.growwStcg)}</span>
                     </div>
                     <div className="taxly-conn-box">
                       <span className="taxly-conn-name">Form 16 PDF</span>
-                      <span className="taxly-conn-amount font-tabular">Gross ₹24.0L</span>
+                      <span className="taxly-conn-amount font-tabular">Gross {formatINRLakh(sample.form16Gross)}</span>
                     </div>
                     <div className="taxly-conn-box">
                       <span className="taxly-conn-name">HDFC Bank</span>
-                      <span className="taxly-conn-amount font-tabular">Int. ₹14.2K</span>
+                      <span className="taxly-conn-amount font-tabular">Int. {formatINRLakh(sample.hdfcInterest)}</span>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
-                {/* LAYER 2: REGIME OPTIMIZER (Revealed when activeIdx >= 2) */}
-                <motion.div
-                  initial={false}
-                  animate={{
-                    opacity: activeIdx >= 2 ? 1 : 0.28,
-                    scale: activeIdx >= 2 ? 1 : 0.985,
-                    filter: activeIdx >= 2 ? 'grayscale(0%)' : 'grayscale(100%)'
-                  }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="taxly-card-panel"
-                >
+                {/* MODULE 2: REGIME OPTIMIZER (Owned by Step 3, activeIdx === 2) */}
+                <div className={`taxly-card-panel ${activeIdx === 2 ? 'module-active' : ''}`}>
                   <div className="taxly-panel-header">
                     <span className="taxly-panel-label">Dual Regime Simulation</span>
-                    <span className="taxly-badge-save font-tabular">
-                      Save ₹34,300 (New Regime)
+                    <span className={`taxly-badge-save font-tabular ${activeIdx === 2 ? 'highlight' : ''}`}>
+                      Save {formatINR(sample.savings)} (New Regime)
                     </span>
                   </div>
 
                   <div className="taxly-regime-grid">
                     <div className="taxly-regime-box">
                       <span className="taxly-regime-title">Old Regime Tax</span>
-                      <span className="taxly-regime-amount strike font-tabular">₹2,42,800</span>
+                      <span className="taxly-regime-amount strike font-tabular">{formatINR(sample.oldTotalTax)}</span>
                       <span className="taxly-regime-meta">Max 80C + 80D applied</span>
                     </div>
-                    <div className="taxly-regime-box winner">
-                      <span className="taxly-regime-title accent">New Regime Tax</span>
-                      <span className="taxly-regime-amount accent font-tabular">₹2,08,500</span>
-                      <span className="taxly-regime-meta accent">Cheaper &amp; Zero Paperwork ✓</span>
+                    <div className={`taxly-regime-box ${activeIdx === 2 ? 'winner' : ''}`}>
+                      <span className={`taxly-regime-title ${activeIdx === 2 ? 'accent' : ''}`}>New Regime Tax</span>
+                      <span className={`taxly-regime-amount font-tabular ${activeIdx === 2 ? 'accent' : ''}`}>
+                        {formatINR(sample.newTotalTax)}
+                      </span>
+                      <span className={`taxly-regime-meta ${activeIdx === 2 ? 'accent' : ''}`}>
+                        Cheaper &amp; Zero Paperwork ✓
+                      </span>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
-                {/* LAYER 3: DETERMINISTIC TAX ENGINE (Revealed when activeIdx >= 3) */}
-                <motion.div
-                  initial={false}
-                  animate={{
-                    opacity: activeIdx >= 3 ? 1 : 0.28,
-                    scale: activeIdx >= 3 ? 1 : 0.985,
-                    filter: activeIdx >= 3 ? 'grayscale(0%)' : 'grayscale(100%)'
-                  }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="taxly-card-panel"
-                >
+                {/* MODULE 3: DETERMINISTIC TAX ENGINE (Owned by Step 4, activeIdx === 3) */}
+                <div className={`taxly-card-panel ${activeIdx === 3 ? 'module-active' : ''}`}>
                   <div className="taxly-audit-row">
-                    <span className="taxly-audit-icon">🛡️</span>
+                    <div className="taxly-audit-icon-wrapper">
+                      <ShieldCheck size={20} strokeWidth={1.75} style={{ color: 'var(--accent)' }} />
+                    </div>
                     <div className="taxly-audit-text">
                       <div className="taxly-audit-head">
-                        <span>134 Statutory Unit Tests Passed</span>
-                        <span className="taxly-audit-proof font-tabular">Zero LLM Hallucination</span>
+                        <span>{getClaim('statutoryUnitTests')}</span>
+                        <span className="taxly-audit-proof font-tabular">{getClaim('zeroHallucination')}</span>
                       </div>
                       <div className="taxly-audit-tags font-tabular">
                         <span>✓ Sec 87A rebate</span>
-                        <span>✓ Std Ded ₹75,000</span>
-                        <span>✓ Cess 4%: ₹8,340</span>
-                        <span>✓ Sec 234A/B/C: ₹0</span>
+                        <span>✓ Std Ded {formatINR(sample.standardDeduction)}</span>
+                        <span>✓ Cess 4%: {formatINR(sample.newCess)}</span>
+                        <span>✓ Sec 234A/B/C: {formatINR(sample.sec234Interest)}</span>
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
-                {/* LAYER 4: CA CERTIFIED DISPATCH (Revealed when activeIdx === 4) */}
-                <AnimatePresence>
-                  {activeIdx === 4 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
-                      className="taxly-ca-dispatch-card"
-                    >
-                      <div className="taxly-ca-left">
-                        <div className="taxly-ca-badge-icon">✓</div>
-                        <div>
-                          <div className="taxly-ca-title">
-                            CA Certified &amp; ITD Gateway Ready
-                          </div>
-                          <div className="taxly-ca-sub">
-                            Refund Due: <strong className="font-tabular">₹1,34,300</strong> into Verified HDFC Bank
-                          </div>
-                        </div>
+                {/* MODULE 4: CA CERTIFIED DISPATCH (Owned by Step 5, activeIdx === 4) */}
+                <div className={`taxly-ca-dispatch-card ${activeIdx === 4 ? 'module-active' : ''}`}>
+                  <div className="taxly-ca-left">
+                    <div className="taxly-ca-badge-icon">✓</div>
+                    <div>
+                      <div className="taxly-ca-title">
+                        {getClaim('caCertifiedTitle')}
                       </div>
-                      <button type="button" className="taxly-dispatch-btn font-tabular">
-                        E-File Now →
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <div className="taxly-ca-sub">
+                        Refund Due: <strong className="font-tabular">{formatINR(sample.refundDue)}</strong> into Verified HDFC Bank
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="taxly-dispatch-btn font-tabular"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    style={{ pointerEvents: 'none', userSelect: 'none' }}
+                  >
+                    Sample action
+                  </div>
+                </div>
 
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import StaticPageLayout from '../../components/StaticPageLayout'
+import { TAX_YEAR_CONFIG } from '../../config/taxYear'
 
 const TABLE = [
   ['Who should file', 'Salaried with one employer, pension, one house property, interest income up to ₹10,000', 'Two or more employers, multiple house properties, capital gains, lottery, foreign income/assets'],
@@ -14,7 +15,7 @@ const TABLE = [
 export default function GuideITR1vs2Page() {
   return (
     <StaticPageLayout title="ITR-1 vs ITR-2: Which Form Do You Need?">
-      <div style={s.meta}>AY 2025–26 · 3 min read · Updated June 2025</div>
+      <div style={s.meta}>{TAX_YEAR_CONFIG.assessmentYear} · 3 min read · Updated 2026</div>
 
       <p style={s.lead}>
         The most common source of confusion at filing time — are you an ITR-1 filer or ITR-2? 

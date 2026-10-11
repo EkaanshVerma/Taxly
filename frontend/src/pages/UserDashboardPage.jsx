@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { getSessions, getSession, createSession, downloadXml } from '../api/taxly'
 import Navbar from '../components/Navbar'
 import { useToast } from '../components/ToastContext'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 
-const AY_LABEL = { '2526': 'AY 2025–26', '2425': 'AY 2024–25' }
+const AY_LABEL = { '2627': TAX_YEAR_CONFIG.assessmentYear, '2526': 'AY 2025–26', '2425': 'AY 2024–25' }
 const TOTAL_STEPS = 12
 
 const STATUS_META = {
@@ -351,7 +352,7 @@ export default function UserDashboardPage() {
         <div className="d-welcome">
           <div>
             <h1 className="d-welcome-title">Welcome back{user.name ? ', ' + user.name.split(' ')[0] : ''}! 👋</h1>
-            <p className="d-welcome-sub">AY 2025–26 · Filing deadline: 31 July 2025</p>
+            <p className="d-welcome-sub">{TAX_YEAR_CONFIG.assessmentYear} · Filing deadline: {TAX_YEAR_CONFIG.filingDeadline}</p>
           </div>
           <button className="d-logout" onClick={handleLogout}>Log out</button>
         </div>

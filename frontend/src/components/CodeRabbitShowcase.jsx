@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 import './CodeRabbitShowcase.css'
 
 const TABS = [
@@ -281,7 +282,7 @@ export default function CodeRabbitShowcase() {
               <div className="cr-code-card">
                 <div className="cr-code-header">
                   <span className="cr-code-tag">FORM 16 PARSER</span>
-                  <span className="cr-code-file">Part_A_B_AY2025-26.pdf</span>
+                  <span className="cr-code-file">Part_A_B_AY{TAX_YEAR_CONFIG.aySlug}.pdf</span>
                 </div>
                 <div className="cr-code-content">
                   <div className="cr-code-line"><span className="c-dim">01</span> <span className="c-key">Employer:</span> Tata Consultancy Services Ltd. (TAN: CHEA01928B)</div>

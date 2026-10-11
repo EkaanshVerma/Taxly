@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getClients, createClient, approveClient, downloadXml, deleteClient } from '../api/ca'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 
 export default function CADashboardPage({ caToken, setCAToken }) {
   const navigate = useNavigate()
@@ -70,7 +71,7 @@ export default function CADashboardPage({ caToken, setCAToken }) {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'taxly_itr_2025-26.xml'
+      a.download = `taxly_itr_${TAX_YEAR_CONFIG.aySlug}.xml`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)

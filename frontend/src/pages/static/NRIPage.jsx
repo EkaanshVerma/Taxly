@@ -1,10 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import StaticPageLayout from '../../components/StaticPageLayout'
+import { TAX_YEAR_CONFIG } from '../../config/taxYear'
 
 const GUIDES = [
   { href: '/guides/itr-1-vs-itr-2', emoji: '📋', title: 'ITR-1 vs ITR-2', desc: 'Which form do you need to file? Understand the difference in under 3 minutes.' },
-  { href: '/guides/old-vs-new-regime-2025', emoji: '⚖️', title: 'Old vs New Tax Regime (AY 2025–26)', desc: 'Side-by-side comparison with a calculator to find which saves you more.' },
+  { href: '/guides/old-vs-new-regime-2025', emoji: '⚖️', title: `Old vs New Tax Regime (${TAX_YEAR_CONFIG.assessmentYear})`, desc: 'Side-by-side comparison with a calculator to find which saves you more.' },
   { href: '/guides/nri-tax-filing-india', emoji: '✈️', title: 'NRI Tax Filing in India', desc: 'RNOR vs NRI, DTAA, foreign income, and what you must declare.' },
   { href: '/guides/how-tax-deduction-ai-works', emoji: '🤖', title: 'How AI Tax Deductions Work', desc: "How Taxly's AI identifies and applies deductions from your conversation." },
 ]
@@ -15,8 +16,8 @@ const FAQS = [
     a: 'Under the old regime: Section 80C (up to ₹1.5L for PPF, ELSS, LIC), HRA exemption, standard deduction (₹50,000), and Section 80D for medical insurance (up to ₹25,000). Under the new regime, most deductions are not available except the standard deduction (now ₹75,000).'
   },
   {
-    q: 'What is the deadline for filing ITR for AY 2025–26?',
-    a: '31 July 2025 for individuals not subject to audit. A belated return can be filed until 31 December 2025 with a late fee of up to ₹5,000 under Section 234F.'
+    q: `What is the deadline for filing ITR for ${TAX_YEAR_CONFIG.assessmentYear}?`,
+    a: `${TAX_YEAR_CONFIG.filingDeadline} for individuals not subject to audit. A belated return can be filed until 31 December with a late fee of up to ₹5,000 under Section 234F.`
   },
   {
     q: 'Do I need to file if my income is below the basic exemption limit?',

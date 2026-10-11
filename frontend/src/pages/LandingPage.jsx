@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createSession } from '../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 import './LandingPage.css'
 
 /* ── Intersection Observer hook for scroll-reveal ── */
@@ -177,7 +178,7 @@ export default function LandingPage() {
                         <button className="summary-back">‹</button>
                         <div className="summary-title-wrap">
                           <div className="summary-title">Your filing</div>
-                          <div className="summary-sub">AY 2025–26 · ITR-1</div>
+                          <div className="summary-sub">{TAX_YEAR_CONFIG.assessmentYear} · ITR-1</div>
                         </div>
                       </div>
                       <div className="summary-body">

@@ -1470,7 +1470,7 @@ export default function Home() {
             <div className="demo-body sample-modal-body">
               <div className="sample-summary-head">
                 <h3>Tax Summary</h3>
-                <p>AY 2025–26 · Form 16 & deductions reconciled</p>
+                <p>{TAX_YEAR_CONFIG.assessmentYear} · Form 16 &amp; deductions reconciled</p>
               </div>
               <div className="sample-breakdown-list">
                 <div className="sample-breakdown-row">

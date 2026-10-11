@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { generateXml } from '../api/taxly'
 import { useToast } from './ToastContext'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 
 const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy'
 
@@ -20,7 +21,7 @@ export default function PaymentModal({ sessionId, amount, onSuccess, onClose }) 
         amount: amount * 100, // paise
         currency: 'INR',
         name: 'Taxly',
-        description: 'ITR Filing AY 2025–26',
+        description: `ITR Filing ${TAX_YEAR_CONFIG.assessmentYear}`,
         image: '/logo-white.png',
         notes: { session_id: sessionId },
         prefill: {},

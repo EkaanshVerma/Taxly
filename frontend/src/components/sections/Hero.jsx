@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createSession } from '../../api/taxly'
 import { v4 as uuidv4 } from 'uuid'
+import { TAX_YEAR_CONFIG } from '../../config/taxYear'
 import './sections.css'
 
 // ─── Animated number flip ──────────────────────────────────────────────────────
@@ -164,7 +165,7 @@ export default function Hero() {
     <div className="landing-container">
       <div className="hero-frame" id="heroFrame" data-theme={theme}>
         <div className="announce">
-          <span>Filing season is open — AY 2025–26</span>
+          <span>Filing season is open — {TAX_YEAR_CONFIG.assessmentYear}</span>
           <span className="divider">—</span>
           <a href="#" onClick={startFiling}>File taxes now →</a>
         </div>
@@ -247,7 +248,7 @@ export default function Hero() {
                         <button className="summary-back" onClick={() => { setPhoneSalary(1800000); setActiveRegime(null) }}>‹</button>
                         <div className="summary-title-wrap">
                           <div className="summary-title">Live Tax Estimator</div>
-                          <div className="summary-sub">AY 2025–26 · Interactive Preview</div>
+                          <div className="summary-sub">{TAX_YEAR_CONFIG.assessmentYear} · Interactive Preview</div>
                         </div>
                       </div>
 

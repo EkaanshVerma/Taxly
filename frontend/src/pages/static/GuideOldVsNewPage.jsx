@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import StaticPageLayout from '../../components/StaticPageLayout'
+import { TAX_YEAR_CONFIG } from '../../config/taxYear'
 
 function calcOld(gross) {
   const taxable = Math.max(0, gross - 50000 - 150000)
@@ -32,8 +33,8 @@ export default function GuideOldVsNewPage() {
   const savings = Math.abs(oldTax - newTax)
 
   return (
-    <StaticPageLayout title="Old vs New Tax Regime (AY 2025–26)">
-      <div style={s.meta}>AY 2025–26 · 5 min read · Includes live calculator</div>
+    <StaticPageLayout title={`Old vs New Tax Regime (${TAX_YEAR_CONFIG.assessmentYear})`}>
+      <div style={s.meta}>{TAX_YEAR_CONFIG.assessmentYear} · 5 min read · Includes live calculator</div>
 
       <p style={s.lead}>
         The new tax regime got a major upgrade in Budget 2024 — zero tax on income up to ₹7L, higher standard deduction, 

@@ -10,6 +10,7 @@ import {
   deleteSession
 } from '../api/taxly'
 import { useToast } from '../components/ToastContext'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 import { v4 as uuidv4 } from 'uuid'
 import './Dashboard.css'
 
@@ -296,7 +297,7 @@ export default function Dashboard() {
   const formatFilingTitle = (s) => {
     if (s.client_name) return `${s.client_name} · ITR`
     const date = s.created_at ? new Date(s.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) : 'Draft'
-    return `AY 2025-26 Filing (${date})`
+    return `${TAX_YEAR_CONFIG.assessmentYear} Filing (${date})`
   }
 
   const handleLogout = () => {
@@ -533,7 +534,7 @@ export default function Dashboard() {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5">
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
-                <span>AY 2025-26 Filing</span>
+                <span>{TAX_YEAR_CONFIG.assessmentYear} Filing</span>
               </div>
             )}
           </div>
@@ -617,9 +618,9 @@ export default function Dashboard() {
             <div className="g-suggestion-chips">
               <button
                 className="g-chip"
-                onClick={() => handleSendMessage("Let's start my FY 2024-25 (AY 2025-26) ITR filing. I am a salaried employee.")}
+                onClick={() => handleSendMessage(`Let's start my ${TAX_YEAR_CONFIG.financialYear} (${TAX_YEAR_CONFIG.assessmentYear}) ITR filing. I am a salaried employee.`)}
               >
-                <span>⚡ Start FY 2024-25 ITR Filing</span>
+                <span>⚡ Start {TAX_YEAR_CONFIG.financialYear} ITR Filing</span>
               </button>
 
               <button

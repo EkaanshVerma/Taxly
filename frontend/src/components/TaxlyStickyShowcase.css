@@ -1,6 +1,7 @@
 /* ============================================================
    TAXLY INTELLIGENCE CORE SHOWCASE
    Window-Scroll-Driven Sticky Runway Architecture
+   Polish Pass: Stage-driven emphasis, claims, typography
    ============================================================ */
 
 :root {
@@ -111,18 +112,19 @@
 
 .taxly-headline {
   font-family: var(--serif);
-  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  font-size: clamp(2rem, 2.8vw, 2.75rem);
   line-height: 1.1;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--text);
   margin: 0;
+  max-width: 18ch;
   text-wrap: balance;
-  max-width: 14ch;
 }
 
 .taxly-headline-muted {
   color: var(--text-muted);
+  display: block;
 }
 
 /* 2. STEPS ZONE: PROGRESS RAIL & STEPPER */
@@ -179,35 +181,77 @@
   transition: opacity 0.25s ease;
 }
 
+.taxly-step-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* Inactive items: muted opacity */
+.taxly-step-item:not(.active):not(.done) {
+  opacity: 0.55;
+}
+
+.taxly-step-item.done {
+  opacity: 0.75;
+}
+
+.taxly-step-item.active {
+  opacity: 1;
+}
+
+.taxly-step-item:hover {
+  opacity: 1;
+}
+
 /* 10px Rail Node */
 .taxly-rail-node {
   position: absolute;
   left: 0;
-  top: 4px;
+  top: 5px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  z-index: 3;
-  transition: all 0.25s ease;
-  box-sizing: border-box;
-}
-
-.taxly-rail-node.node-upcoming {
-  border: 1.5px solid var(--border);
   background: var(--surface);
-}
-
-.taxly-rail-node.node-done {
-  background: var(--accent);
-  border: 1.5px solid var(--accent);
+  border: 2px solid var(--border);
+  box-sizing: border-box;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 3;
 }
 
 .taxly-rail-node.node-active {
+  border-color: var(--accent);
   background: var(--accent);
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 0 3px var(--accent), 0 0 12px var(--accent);
+  box-shadow: 0 0 10px var(--accent);
 }
 
+.taxly-rail-node.node-done {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.taxly-rail-node.node-upcoming {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+/* Glowing ring around active node */
+.taxly-node-glow-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0.6;
+  animation: taxly-pulse-ring 2s infinite ease-out;
+}
+
+@keyframes taxly-pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 0.2; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Step Content */
 .taxly-step-content {
   display: flex;
   flex-direction: column;
@@ -215,41 +259,39 @@
 
 .taxly-step-category {
   font-family: var(--sans);
-  font-size: 10.5px;
-  line-height: 14px;
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
   color: var(--text-muted);
-  transition: color 0.25s ease;
+  margin-bottom: 2px;
+  transition: color 0.2s ease;
 }
 
 .taxly-step-category.cat-active {
   color: var(--accent);
-  font-weight: 600;
 }
 
 .taxly-step-title {
-  margin: 2px 0 0 0;
   font-family: var(--serif);
-  font-size: 17px;
-  line-height: 24px;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: font-size 0.25s ease, line-height 0.25s ease, color 0.25s ease, font-weight 0.25s ease;
-  will-change: font-size, color;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  transition: color 0.2s ease;
 }
 
 .taxly-step-title.title-active {
-  font-size: 23px;
-  line-height: 28px;
-  font-weight: 600;
   color: var(--text);
 }
 
+/* Accordion Description & Chips */
 .taxly-step-accordion {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .taxly-step-accordion.open {
@@ -265,16 +307,15 @@
   font-size: 13.5px;
   line-height: 20px;
   color: var(--text-muted);
-  max-width: 44ch;
-  margin: 8px 0 0 0;
+  margin: 6px 0 10px 0;
 }
 
-/* Chips Row */
+/* Chips row */
 .taxly-chips-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 12px;
+  margin-top: 4px;
 }
 
 .taxly-chip {
@@ -282,15 +323,15 @@
   align-items: center;
   gap: 5px;
   font-family: var(--sans);
-  font-size: 11px;
-  line-height: 14px;
+  font-size: 12.5px;
+  line-height: 16px;
   font-weight: 500;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
+  background: var(--surface);
   border: 1px solid var(--border);
-  background: var(--accent-soft);
   color: var(--text);
-  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .taxly-chip-check {
@@ -302,18 +343,16 @@
 .taxly-meta-zone {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--border);
+  gap: 16px;
   padding-top: 16px;
+  border-top: 1px solid var(--border);
   font-family: var(--sans);
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-muted);
+  font-size: 12.5px;
 }
 
 .taxly-meta-stage {
-  color: var(--accent);
   font-weight: 600;
+  color: var(--accent);
 }
 
 .taxly-meta-note {
@@ -321,35 +360,29 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   RIGHT COLUMN: MOCKUP WINDOW & AMBIENT GLOW
+   RIGHT COLUMN: MOCKUP WINDOW & ACTIVE MODULE EMPHASIS
    ════════════════════════════════════════════════════════════ */
 .taxly-col-right {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
   height: 100%;
-  box-sizing: border-box;
 }
 
-/* Soft ambient glow (8% opacity dark, 6% light) */
+/* Ambient Background Glow */
 .taxly-ambient-glow {
   position: absolute;
-  width: 520px;
-  height: 520px;
+  width: 420px;
+  height: 420px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
   opacity: 0.08;
-  filter: blur(64px);
+  filter: blur(48px);
   pointer-events: none;
 }
 
-[data-theme="light"] .taxly-ambient-glow {
-  opacity: 0.06;
-}
-
-/* Optional faint dotted grid (4% opacity) */
+/* Faint dotted grid */
 .taxly-dotted-grid {
   position: absolute;
   inset: 0;
@@ -380,7 +413,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -403,8 +436,30 @@
 
 .taxly-window-url {
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
+}
+
+.taxly-window-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* SAMPLE DATA Mono Tag */
+.taxly-sample-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  user-select: none;
 }
 
 .taxly-window-badge {
@@ -412,7 +467,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
   font-weight: 500;
 }
@@ -425,49 +480,80 @@
   box-shadow: 0 0 6px var(--accent);
 }
 
-/* Window Body */
+/* Window Body: 24px padding, 16px module gap */
 .taxly-window-body {
-  padding: 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   box-sizing: border-box;
+  background: var(--surface-raised);
 }
 
-/* Shared Card Panel */
+/* ════════════════════════════════════════════════════════════
+   ACTIVE-MODULE EMPHASIS (Stage-driven, 200ms transitions)
+   ════════════════════════════════════════════════════════════ */
 .taxly-card-panel {
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface);
-  padding: 12px 16px;
+  color: var(--text-muted);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   box-sizing: border-box;
+  opacity: 0.6;
+  transition: opacity 200ms ease, border-color 200ms ease, background-color 200ms ease, color 200ms ease;
 }
 
+/* Active module gets accent border, accent-soft background, primary text */
+.taxly-card-panel.module-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  opacity: 1;
+}
+
+.taxly-card-panel.module-active .taxly-panel-label,
+.taxly-card-panel.module-active .taxly-conn-amount,
+.taxly-card-panel.module-active .taxly-regime-amount,
+.taxly-card-panel.module-active .taxly-metric-val {
+  color: var(--text);
+}
+
+/* Panel Header */
 .taxly-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 12.5px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.taxly-panel-label {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
 .taxly-status-tag-green {
   color: var(--accent);
   font-weight: 600;
+  font-size: 12.5px;
 }
 
 .taxly-status-tag {
   color: var(--text-muted);
   font-weight: 500;
+  font-size: 12.5px;
 }
 
-/* Ledger Grid */
+/* Ledger Grid (Module 0) */
 .taxly-ledger-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -481,39 +567,41 @@
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
+  transition: border-color 200ms ease, background-color 200ms ease;
 }
 
+/* Highlighted ONLY when Step 1 is active */
 .taxly-metric-box.highlight {
   border-color: var(--accent);
-  background: var(--accent-soft);
+  background: var(--surface);
+}
+
+.taxly-metric-box.highlight .taxly-metric-val.accent {
+  color: var(--accent);
 }
 
 .taxly-metric-lbl {
-  font-size: 10px;
+  font-size: 12.5px;
   font-family: var(--sans);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .taxly-metric-val {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text);
-  margin-top: 2px;
-}
-
-.taxly-metric-val.accent {
-  color: var(--accent);
-}
-
-.taxly-metric-sub {
-  font-size: 10px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-/* Connectors Grid */
+.taxly-metric-sub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Connectors Grid (Module 1) */
 .taxly-connectors-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -524,32 +612,42 @@
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
 }
 
 .taxly-conn-name {
-  font-size: 10px;
-  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .taxly-conn-amount {
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
-/* Regime Grid */
+/* Regime Grid (Module 2) */
 .taxly-badge-save {
-  font-size: 11px;
+  font-family: var(--sans);
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 2px 8px;
+  color: var(--text-muted);
+  background: var(--surface);
+  padding: 3px 8px;
   border-radius: 6px;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--border);
+  transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+}
+
+/* Savings badge highlighted ONLY when Step 3 is active */
+.taxly-badge-save.highlight {
+  color: var(--accent);
+  background: var(--surface);
+  border-color: var(--accent);
 }
 
 .taxly-regime-grid {
@@ -562,31 +660,34 @@
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
+  transition: border-color 200ms ease, background-color 200ms ease;
 }
 
+/* New regime winner box highlighted ONLY when Step 3 is active */
 .taxly-regime-box.winner {
   border-color: var(--accent);
-  background: var(--accent-soft);
+  background: var(--surface);
+}
+
+.taxly-regime-box.winner .taxly-regime-title.accent,
+.taxly-regime-box.winner .taxly-regime-amount.accent,
+.taxly-regime-box.winner .taxly-regime-meta.accent {
+  color: var(--accent);
 }
 
 .taxly-regime-title {
-  font-size: 10px;
+  font-size: 12.5px;
   color: var(--text-muted);
   text-transform: uppercase;
-}
-
-.taxly-regime-title.accent {
-  color: var(--accent);
-  font-weight: 600;
 }
 
 .taxly-regime-amount {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -595,30 +696,23 @@
   color: var(--text-muted);
 }
 
-.taxly-regime-amount.accent {
-  color: var(--accent);
-}
-
 .taxly-regime-meta {
-  font-size: 10px;
+  font-size: 12.5px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-.taxly-regime-meta.accent {
-  color: var(--accent);
-  font-weight: 500;
-}
-
-/* Audit Row */
+/* Audit Row (Module 3) */
 .taxly-audit-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.taxly-audit-icon {
-  font-size: 20px;
+.taxly-audit-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -633,41 +727,51 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
 }
 
 .taxly-audit-proof {
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--accent);
 }
 
 .taxly-audit-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  font-size: 10.5px;
+  gap: 6px 10px;
+  font-size: 12.5px;
   color: var(--text-muted);
 }
 
 .taxly-audit-tags span {
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
-/* CA Dispatch Card */
+/* CA Dispatch Card (Module 4) */
 .taxly-ca-dispatch-card {
   border-radius: 12px;
-  border: 1px solid var(--accent);
-  background: var(--accent-soft);
-  padding: 12px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+  opacity: 0.6;
+  transition: opacity 200ms ease, border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+}
+
+.taxly-ca-dispatch-card.module-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  opacity: 1;
 }
 
 .taxly-ca-left {
@@ -691,13 +795,13 @@
 }
 
 .taxly-ca-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
 }
 
 .taxly-ca-sub {
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -706,19 +810,15 @@
   color: var(--accent);
 }
 
+/* Non-interactive action button */
 .taxly-dispatch-btn {
   background: var(--cta);
   color: var(--cta-text);
   border: none;
   border-radius: 8px;
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-
-.taxly-dispatch-btn:hover {
-  background: var(--cta-hover);
-  transform: translateY(-1px);
+  user-select: none;
+  white-space: nowrap;
 }

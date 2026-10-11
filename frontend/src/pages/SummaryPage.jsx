@@ -4,6 +4,7 @@ import { calculateTax } from '../api/taxly'
 import RegimeComparison from '../components/RegimeComparison'
 import PaymentModal from '../components/PaymentModal'
 import { useToast } from '../components/ToastContext'
+import { TAX_YEAR_CONFIG } from '../config/taxYear'
 
 const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 
@@ -83,7 +84,7 @@ export default function SummaryPage() {
         <button className="sum-header-back" onClick={() => navigate(`/chat/${sessionId}`)}>←</button>
         <div>
           <div className="sum-header-title">Your Tax Summary</div>
-          <div className="sum-header-sub">AY 2025–26 · Based on information you provided</div>
+          <div className="sum-header-sub">{TAX_YEAR_CONFIG.assessmentYear} · Based on information you provided</div>
         </div>
         <button className="sum-header-dash" onClick={() => navigate('/dashboard')}>Dashboard</button>
       </div>
