@@ -45,77 +45,90 @@ export const TAXLY_STAGES = [
   }
 ]
 
-export default function TaxlyStickyShowcase() {
+export default function TaxlyStickyShowcase({ id = 'context' }) {
   const [activeIdx, setActiveIdx] = useState(0)
-  const isClickScrolling = useRef(false)
-  const scrollTimeoutRef = useRef(null)
-  const sectionRefs = useRef([])
-  const stageButtonsRef = useRef([])
+  const runwayRef = useRef(null)
+  const stageRef = useRef(null)
+  const activeIdxRef = useRef(0)
+  const rafIdRef = useRef(null)
 
-  // Setup IntersectionObserver on 5 runway sections
+  // Window scroll-driven sticky runway logic
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      threshold: 0.5,
-      rootMargin: '-10% 0px -10% 0px'
+    const n = TAXLY_STAGES.length
+
+    const updateScroll = () => {
+      if (!runwayRef.current) return
+      const r = runwayRef.current.getBoundingClientRect()
+      const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
+      const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - 76)
+      const dockTop = 76 // 64px nav-h + 12px margin
+
+      // 40vh buffer at top before steps advance, 40vh buffer at bottom
+      const topPad = window.innerHeight * 0.4
+      const botPad = window.innerHeight * 0.4
+      const total = (r.height - stageH) - topPad - botPad
+
+      if (total <= 0) return
+
+      const scrolled = -r.top + dockTop
+      const p = Math.max(0, Math.min(1, (scrolled - topPad) / total))
+      const index = Math.min(n - 1, Math.max(0, Math.floor(p * n)))
+
+      runwayRef.current.style.setProperty('--p', p.toString())
+
+      if (index !== activeIdxRef.current) {
+        activeIdxRef.current = index
+        setActiveIdx(index)
+      }
     }
 
-    const observerCallback = (entries) => {
-      if (isClickScrolling.current) return
-
-      let bestEntry = null
-      let maxRatio = 0
-
-      for (const entry of entries) {
-        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio
-          bestEntry = entry
-        }
-      }
-
-      if (bestEntry) {
-        const index = Number(bestEntry.target.dataset.index)
-        if (!isNaN(index) && index !== activeIdx) {
-          setActiveIdx(index)
-        }
-      }
+    const onScroll = () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = requestAnimationFrame(updateScroll)
     }
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions)
-    sectionRefs.current.forEach((el) => {
-      if (el) observer.observe(el)
-    })
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    window.addEventListener('load', onScroll, { passive: true })
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(updateScroll)
+    }
+
+    // Initial calculation
+    updateScroll()
 
     return () => {
-      observer.disconnect()
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('load', onScroll)
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
     }
-  }, [activeIdx])
+  }, [])
 
-  // Click handler: smooth scroll to corresponding section
-  const handleStepClick = useCallback((index) => {
-    if (index === activeIdx) return
-    isClickScrolling.current = true
-    setActiveIdx(index)
+  // Optional click/keyboard handler: smoothly scrolls window to target step
+  const handleStepClick = useCallback((i) => {
+    if (!runwayRef.current) return
+    const n = TAXLY_STAGES.length
+    const runwayTop = runwayRef.current.getBoundingClientRect().top + window.scrollY
+    const stageEl = stageRef.current || runwayRef.current.querySelector('.taxly-stage')
+    const stageH = stageEl ? stageEl.offsetHeight : (window.innerHeight - 76)
+    const dockTop = 76
+    const topPad = window.innerHeight * 0.4
+    const botPad = window.innerHeight * 0.4
+    const total = (runwayRef.current.offsetHeight - stageH) - topPad - botPad
+    const targetScroll = runwayTop - dockTop + topPad + ((i + 0.5) / n) * total
+    const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const targetSection = sectionRefs.current[index]
-    if (targetSection) {
-      targetSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-
-    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-    scrollTimeoutRef.current = setTimeout(() => {
-      isClickScrolling.current = false
-    }, 750)
-  }, [activeIdx])
-
-  // Calculate rail progress fill percentage
-  const railProgressPercent = (activeIdx / (TAXLY_STAGES.length - 1)) * 100
+    window.scrollTo({
+      top: targetScroll,
+      behavior: reduced ? 'auto' : 'smooth'
+    })
+  }, [])
 
   return (
-    <div className="taxly-showcase-runway relative w-full">
-      {/* ── STICKY VIEWPORT CONTAINER ── */}
-      <div className="taxly-showcase-sticky-shell">
+    <section id={id} className="taxly-runway" ref={runwayRef} style={{ '--n': TAXLY_STAGES.length }}>
+      {/* ── STAGE: STICKY VIEWPORT PINNED CONTAINER ── */}
+      <div className="taxly-stage" ref={stageRef}>
         <div className="taxly-showcase-container">
           
           {/* ── LEFT COLUMN (5fr) ── */}
@@ -132,17 +145,13 @@ export default function TaxlyStickyShowcase() {
               </h2>
             </div>
 
-            {/* 2. STEPS ZONE (Vertical Stepper with Progress Rail) */}
+            {/* 2. STEPS ZONE: PROGRESS RAIL & STEPPER */}
             <div className="taxly-steps-zone">
               <div className="taxly-stepper-rail-wrapper">
                 {/* 2px Progress Rail Track */}
                 <div className="taxly-rail-track" />
-                {/* Animated Fill Segment */}
-                <motion.div
-                  className="taxly-rail-fill"
-                  animate={{ height: `${railProgressPercent}%` }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
+                {/* Continuous Fill Segment driven by window scroll progress */}
+                <div className="taxly-rail-fill" />
 
                 {/* Steps List */}
                 <div className="taxly-steps-list">
@@ -153,7 +162,6 @@ export default function TaxlyStickyShowcase() {
                     return (
                       <div
                         key={step.id}
-                        ref={(el) => (stageButtonsRef.current[idx] = el)}
                         className={`taxly-step-item ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
                         onClick={() => handleStepClick(idx)}
                         role="button"
@@ -405,18 +413,6 @@ export default function TaxlyStickyShowcase() {
 
         </div>
       </div>
-
-      {/* ── 5 × 80vh RUNWAY SCROLL ANCHORS ── */}
-      <div className="taxly-runway-anchors" aria-hidden="true">
-        {TAXLY_STAGES.map((step, idx) => (
-          <div
-            key={step.id}
-            ref={(el) => (sectionRefs.current[idx] = el)}
-            data-index={idx}
-            className="taxly-runway-stage"
-          />
-        ))}
-      </div>
-    </div>
+    </section>
   )
 }

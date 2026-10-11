@@ -1213,9 +1213,7 @@ export default function Home() {
       </section>
 
       {/* ══ SCROLL-PINNED FEATURE SHOWCASE (TAXLY INTELLIGENCE CORE) ══ */}
-      <section className="ctx" id="context" style={{ padding: 0, position: 'relative', borderTop: '1px solid var(--border)' }}>
-        <TaxlyStickyShowcase />
-      </section>
+      <TaxlyStickyShowcase id="context" />
 
 
 
