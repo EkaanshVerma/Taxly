@@ -57,7 +57,7 @@ export default function SiteNav({ theme, toggleTheme, startFiling, loading = fal
         data-site-header="true"
       >
         <div className="site-header-surface">
-          <div className="nav-in">
+          <div className="nav-in container">
             <Link to="/" className="brand site-header-logo" aria-label="Taxly Home">
               <img
                 src={theme === 'light' ? '/logo-color.png' : '/logo-white.png'}

@@ -100,7 +100,7 @@ export default function Home() {
     // Taxly brand animation colors: signature emerald green and bright cyan-teal (no orange)
     const UP = '#5BD68A'
     const DOWN = '#2DD4BF'
-    const getTargetColor = () => (theme === 'light' ? '#0E1A2E' : '#FFFFFF')
+    const getTargetColor = () => (theme === 'light' ? '#167A47' : '#5BD68A')
 
     if (reduceMotion) {
       sr.textContent = PHRASES[0]
@@ -265,6 +265,20 @@ export default function Home() {
   }, [reduceMotion, theme])
 
   // ── 3. Hero Rail Carousel ──────────────────────────────────────────────────
+  const HERO_TABS = [
+    { num: '01', title: 'Interview', sub: 'in plain English' },
+    { num: '02', title: 'Ingest', sub: 'every certificate' },
+    { num: '03', title: 'Analyse', sub: 'the bank statement' },
+    { num: '04', title: 'Verify', sub: 'before anything files' }
+  ]
+  const [showGridOverlay, setShowGridOverlay] = useState(false)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('grid')
+      setShowGridOverlay(p === '1')
+    }
+  }, [])
+
   const [railIndex, setRailIndex] = useState(0)
   const [railPaused, setRailPaused] = useState(false)
   const [progKey, setProgKey] = useState(0)
@@ -501,10 +515,19 @@ export default function Home() {
 
   return (
     <div className={`home-page theme-${theme}`} data-theme={theme}>
+      {/* Dev Grid Overlay: ?grid=1 */}
+      {showGridOverlay && (
+        <div className="dev-grid-overlay" aria-hidden="true">
+          <div className="container dev-grid-container" />
+        </div>
+      )}
+
       {/* ══ ANNOUNCE ══ */}
       <div className="announce">
-        <b>{TAX_YEAR_CONFIG.announcementText}</b>
-        <a href="#pricing">{TAX_YEAR_CONFIG.announcementCta}</a>
+        <div className="announce-in container">
+          <b>{TAX_YEAR_CONFIG.announcementText}</b>
+          <a href="#pricing">{TAX_YEAR_CONFIG.announcementCta}</a>
+        </div>
       </div>
 
       {/* ══ NAV ══ */}
@@ -517,48 +540,66 @@ export default function Home() {
 
       {/* ══ HERO ══ */}
       <header className="hero">
-        <div className="wrap hero-top">
-          <div>
-            <div className="eyebrow">Agentic tax filing · India</div>
-            <h1>
-              Filing isn't the hard part.
-              <span className="h1-rot-line">
-                <span className="h1-static">It's </span>
-                <span className="h1-rot" aria-live="polite">
-                  <span ref={rollRef} className="roll" aria-hidden="true" />
-                  <span ref={rollSrRef} className="sr-only" />
+        <div className="container hero-container">
+          <div className="hero-eyebrow font-mono">Agentic tax filing · India</div>
+          <div className="hero-grid">
+            <div className="hero-left">
+              <h1 className="hero-headline">
+                <span className="h1-line1">Filing isn't the hard part.</span>
+                <span className="h1-line2">
+                  <span className="h1-static">It's </span>
+                  <span className="h1-rot" aria-live="polite">
+                    <span ref={rollRef} className="roll" aria-hidden="true" />
+                    <span ref={rollSrRef} className="sr-only" />
+                  </span>
                 </span>
-              </span>
-            </h1>
-          </div>
-          <div className="hero-right">
-            <p className="hero-sub">
-              Taxly reads your Form 16, your TDS certificates and your bank statement — flags
-              every rupee that needs explaining, and puts a chartered accountant on the verdict.
-            </p>
-            <button onClick={startFiling} className="btn btn-fill btn-lg" disabled={loading}>
-              {loading ? 'Starting...' : 'Start a free trial →'}
-            </button>
-            <p className="hero-fine" style={{ marginTop: '12px' }}>
-              NO CARD REQUIRED · PAY ON DOWNLOAD
-            </p>
+              </h1>
+            </div>
+            <div className="hero-right">
+              {/* // TODO(owner): confirm the chartered-accountant claim wording */}
+              <p className="hero-sub">
+                <span className="hero-sub-line">Taxly reads your Form 16, TDS certificates and bank statement.</span>
+                <span className="hero-sub-line">Flags every rupee that needs explaining, with a CA on the verdict.</span>
+              </p>
+              <div className="hero-cta-group">
+                <button onClick={startFiling} className="hero-cta-btn" disabled={loading}>
+                  {loading ? 'Starting...' : 'Start a free trial →'}
+                </button>
+                <div className="hero-fine font-mono">
+                  NO CARD REQUIRED · PAY ON DOWNLOAD
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ══ HERO RAIL ══ */}
-        <div className="rail-shell">
-          <div className={`rail ${railPaused ? 'paused' : ''}`} id="rail">
+        {/* ══ TAB STRIP & DEMO PANEL (CodeRabbit reference layout) ══ */}
+        <div className="container hero-demo-shell">
+          <div className="demo-tab-strip" role="tablist" aria-label="Demo steps">
+            {HERO_TABS.map((tab, idx) => (
+              <button
+                key={idx}
+                type="button"
+                role="tab"
+                aria-selected={railIndex === idx}
+                className={`demo-tab-item ${railIndex === idx ? 'active' : ''}`}
+                onClick={() => showRail(idx)}
+              >
+                <span className="demo-tab-num font-mono">{tab.num}</span>
+                <span className="demo-tab-label">
+                  {tab.title}
+                  {railIndex === idx && <span className="demo-tab-sub"> <em>{tab.sub}</em></span>}
+                </span>
+                {railIndex === idx && (
+                  <span key={`p-${idx}-${progKey}`} className={`demo-tab-prog ${railPaused ? 'paused' : ''}`} />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div className={`demo-panel ${railPaused ? 'paused' : ''}`}>
             {/* Panel 01: Interview */}
-            <div
-              className={`pan ${railIndex === 0 ? 'on' : ''}`}
-              data-i="0"
-              onClick={() => showRail(0)}
-            >
-              <div className="pan-head">
-                <span className="pan-n">01</span>
-                <span className="pan-t">Interview <em>in plain English</em></span>
-                {railIndex === 0 && <span key={`p0-${progKey}`} className="pan-prog"></span>}
-              </div>
+            <div className={`demo-slide ${railIndex === 0 ? 'active' : ''}`}>
               <div className="pan-body">
                 <div className="pan-inner">
                   <div className="msg">
@@ -590,16 +631,7 @@ export default function Home() {
             </div>
 
             {/* Panel 02: Ingest */}
-            <div
-              className={`pan ${railIndex === 1 ? 'on' : ''}`}
-              data-i="1"
-              onClick={() => showRail(1)}
-            >
-              <div className="pan-head">
-                <span className="pan-n">02</span>
-                <span className="pan-t">Ingest <em>every certificate</em></span>
-                {railIndex === 1 && <span key={`p1-${progKey}`} className="pan-prog"></span>}
-              </div>
+            <div className={`demo-slide ${railIndex === 1 ? 'active' : ''}`}>
               <div className="pan-body">
                 <div className="pan-inner">
                   <div className="doc-row">
@@ -658,16 +690,7 @@ export default function Home() {
             </div>
 
             {/* Panel 03: Analyse */}
-            <div
-              className={`pan ${railIndex === 2 ? 'on' : ''}`}
-              data-i="2"
-              onClick={() => showRail(2)}
-            >
-              <div className="pan-head">
-                <span className="pan-n">03</span>
-                <span className="pan-t">Analyse <em>the bank statement</em></span>
-                {railIndex === 2 && <span key={`p2-${progKey}`} className="pan-prog"></span>}
-              </div>
+            <div className={`demo-slide ${railIndex === 2 ? 'active' : ''}`}>
               <div className="pan-body">
                 <div className="pan-inner">
                   <div className="flag">
@@ -683,7 +706,7 @@ export default function Home() {
                     </div>
                     <div className="conf">
                       <div className="conf-track"><div className="conf-fill" style={{ width: '82%' }}></div></div>
-                      <span className="conf-num">82% · likely</span>
+                      <span className="conf-num font-tabular">82% · likely</span>
                     </div>
                     <div className="flag-foot">
                       <span className="flag-need">NEEDS <b>invoice or contract</b></span>
@@ -704,7 +727,7 @@ export default function Home() {
                     </div>
                     <div className="conf">
                       <div className="conf-track"><div className="conf-fill low" style={{ width: '38%' }}></div></div>
-                      <span className="conf-num">38% · unclear</span>
+                      <span className="conf-num font-tabular">38% · unclear</span>
                     </div>
                     <div className="flag-foot">
                       <span className="flag-need">ESCALATED — <b>CA must classify</b></span>
@@ -716,16 +739,7 @@ export default function Home() {
             </div>
 
             {/* Panel 04: Verify */}
-            <div
-              className={`pan ${railIndex === 3 ? 'on' : ''}`}
-              data-i="3"
-              onClick={() => showRail(3)}
-            >
-              <div className="pan-head">
-                <span className="pan-n">04</span>
-                <span className="pan-t">Verify <em>before anything files</em></span>
-                {railIndex === 3 && <span key={`p3-${progKey}`} className="pan-prog"></span>}
-              </div>
+            <div className={`demo-slide ${railIndex === 3 ? 'active' : ''}`}>
               <div className="pan-body">
                 <div className="pan-inner">
                   <div className="qhead">
@@ -779,26 +793,28 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="rail-ctl">
-            <div className="rail-dots" id="dots">
-              {[0, 1, 2, 3].map((n) => (
-                <i
-                  key={n}
-                  className={railIndex === n ? 'on' : ''}
-                  onClick={() => showRail(n)}
-                />
-              ))}
+            {/* Controls */}
+            <div className="demo-ctl">
+              <div className="demo-dots">
+                {HERO_TABS.map((_, n) => (
+                  <i
+                    key={n}
+                    className={railIndex === n ? 'on' : ''}
+                    onClick={() => showRail(n)}
+                    aria-label={`Slide ${n + 1}`}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                className="pausebtn"
+                aria-label={railPaused ? 'Play' : 'Pause'}
+                onClick={() => setRailPaused((p) => !p)}
+              >
+                {railPaused ? '▶' : '❚❚'}
+              </button>
             </div>
-            <button
-              className="pausebtn"
-              id="pause"
-              aria-label={railPaused ? 'Play' : 'Pause'}
-              onClick={() => setRailPaused((p) => !p)}
-            >
-              {railPaused ? '▶' : '❚❚'}
-            </button>
           </div>
         </div>
 
