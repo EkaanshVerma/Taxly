@@ -234,8 +234,6 @@ export default function Home() {
       swap(PHRASES[idx])
     }
 
-    init()
-
     const onResize = () => {
       for (const k in wcache) delete wcache[k]
       root.querySelectorAll('.roll-cell').forEach((c, i) => {
@@ -246,10 +244,8 @@ export default function Home() {
 
     const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()
     ready.then(() => {
-      for (const k in wcache) delete wcache[k]
-      root.querySelectorAll('.roll-cell').forEach((c, i) => {
-        c.style.width = widthEm(current[i] || '') + 'em'
-      })
+      // Init only after fonts are ready so widthEm() uses the correct loaded font metrics
+      init()
       initTimeout = setTimeout(() => {
         tick()
         intervalId = setInterval(tick, PERIOD)
