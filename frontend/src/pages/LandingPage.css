@@ -9,7 +9,7 @@
   --teal: #22A398;
   --cream: #F5F3EC;
   --ink-brand: #1A2E5A;
-  --mono: 'Roboto Mono', monospace;
+  --mono: 'IBM Plex Mono', monospace;
 
   /* ---- hero theme tokens (dark = default) ---- */
   --hero-bg: radial-gradient(ellipse 900px 500px at 78% 10%, rgba(46,189,133,0.16), transparent 60%), radial-gradient(ellipse 700px 500px at 10% 90%, rgba(34,163,152,0.14), transparent 60%), linear-gradient(160deg, var(--navy-deep) 0%, var(--navy) 55%, #0e2440 100%);

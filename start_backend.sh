@@ -2,7 +2,7 @@
 # Taxly backend launcher — uses /tmp/taxly_venv to avoid pycache timeout issues
 set -e
 
-VENV=/tmp/taxly_venv
+VENV=/Users/hrtc/.taxly_venv
 BACKEND=/Users/hrtc/Desktop/Taxly/backend
 ENV_FILE=$BACKEND/.env
 

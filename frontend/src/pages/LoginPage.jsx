@@ -621,7 +621,7 @@ export default function LoginPage() {
           display: grid;
           grid-template-columns: 1fr 480px;
           background: #0A0E14;
-          font-family: var(--sans, 'Roboto Mono', monospace);
+          font-family: 'Inter', system-ui, sans-serif;
         }
 
         /* ── Hero (left) ── */

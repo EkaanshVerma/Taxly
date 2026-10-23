@@ -1,28 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { ShieldCheck } from 'lucide-react'
 import { TAX_YEAR_CONFIG } from '../config/taxYear.ts'
 import { getClaim } from '../content/claims.ts'
 import { computeSample, formatINR, formatINRLakh } from '../demo/sampleReturn.ts'
 import './TaxlyStickyShowcase.css'
-
-function ShieldCheck({ size = 20, strokeWidth = 1.75, style, className }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={style}
-      className={className}
-    >
-      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  )
-}
 
 export const getTaxlyStages = (sample) => [
   {
