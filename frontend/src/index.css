@@ -5,42 +5,45 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #F6F8F6;
-  --surface: #FFFFFF;
-  --surface-raised: #FFFFFF;
-  --border: #E1E8E4;
-  --text: #0E1A2E;
-  --text-muted: #55657A;
-  --cta: #17335F;
-  --cta-hover: #102A52;
-  --cta-text: #FFFFFF;
-  --accent: #167A47;
-  --accent-soft: #E3F3E9;
-  --teal: #0F766E;
-  --user-bubble: #167A47;
-  --user-bubble-text: #FFFFFF;
-  --warning: #B45309;
-  --danger: #B91C1C;
+  /* Panoptive Research Light Mode Palette */
+  --bg: #F7F5F0;                /* Panoptive paper: refined warm stone cream */
+  --surface: #FAFAF6;           /* Panoptive feature card clean warm off-white */
+  --surface-raised: #E5E9DF;    /* Panoptive visual & diagram container: muted sage */
+  --border: #D7DDD2;            /* Panoptive research-line: soft sage hairline */
+  --border-hover: #91A48F;      /* Panoptive card hover border */
+  --text: #193D32;              /* Panoptive research-green: deep velvety hunter green */
+  --text-muted: #58675E;        /* Panoptive research-muted: sage-slate secondary text */
+  --cta: #193D32;               /* Panoptive signature dark hunter green CTA */
+  --cta-hover: #122B23;         /* Deep forest hover */
+  --cta-text: #F7F5F0;          /* Warm paper text on dark CTA */
+  --accent: #193D32;            /* Deep botanical forest accent */
+  --accent-soft: #E5E9DF;       /* Soft sage pill badge background */
+  --teal: #26594B;              /* Harmonious botanical teal */
+  --user-bubble: #193D32;       /* Forest user chat bubble */
+  --user-bubble-text: #F7F5F0;
+  --warning: #965D1D;           /* Warm earth amber */
+  --danger: #B03838;            /* Sophisticated terracotta red */
 
   /* Legacy mappings */
   --ink: var(--text);
   --ink-2: var(--text-muted);
-  --ink-3: #8C9BAD;
+  --ink-3: #869D87;             /* Panoptive connector & secondary diagram label */
   --paper: var(--bg);
   --paper-2: var(--surface);
   --paper-3: var(--border);
-  --blue: #1B4FD8;
-  --blue-light: #EEF2FF;
-  --blue-mid: #C7D2FE;
+  --blue: #193D32;
+  --blue-light: #E5E9DF;
+  --blue-mid: #D4DECE;
   --green: var(--accent);
   --green-light: var(--accent-soft);
-  --green-mid: #A7F3D0;
+  --green-mid: #91A48F;
   --amber: var(--warning);
-  --amber-light: #FFFBEB;
-  --red-light: #FEF2F2;
+  --amber-light: #F5EEDC;
+  --red-light: #F9EBEB;
   --red-text: var(--danger);
-  --serif: 'Inter Tight', system-ui, -apple-system, sans-serif;
-  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --serif: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --mono: 'JetBrains Mono', 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
   --r: 14px;
   --r-lg: 20px;
   --r-xl: 28px;
@@ -86,8 +89,26 @@
   --sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-html { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 16px; overflow-x: clip; max-width: 100vw; width: 100%; }
-body { min-height: 100vh; overflow-x: clip; max-width: 100vw; width: 100%; position: relative; }
+html {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font-family: inherit; }
 body::before {
   content: "";
   position: fixed;
